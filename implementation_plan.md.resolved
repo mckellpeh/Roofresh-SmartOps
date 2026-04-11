@@ -1,0 +1,51 @@
+# Mushroom Container IOT Dashboard
+
+The goal is to recreate a dashboard for the Roofresh startup to monitor and control their mushroom container environment. It will connect to the SwitchBot API, allowing control of the Humidifier (Bot Clicker) and Air Conditioner (IR Remote), while displaying real-time data from the Hub 2.
+
+## User Review Required
+> [!IMPORTANT]
+> The app needs a secure backend to proxy API requests to SwitchBot (due to browser CORS restrictions and the need to hide your API Secret). I propose creating a **Next.js application**. Next.js has built-in API Routes to handle the server-side requests securely, and hosting it on **Vercel** will be completely free and highly optimal. 
+> Also, following your specific instruction, I will use purely Vanilla CSS for styling to ensure Maximum control and a premium look.
+
+## Proposed Changes
+
+---
+
+### Backend / Infrastructure
+#### [NEW] Next.js Initialization
+We will initialize a Next.js framework in the project workspace directory. 
+
+#### [NEW] `src/app/api/devices/route.ts`
+Server-side route to fetch all SwitchBot devices and the current container temperature/humidity from Hub 2.
+
+#### [NEW] `src/app/api/control/route.ts`
+Server-side route to securely send control commands to the Humidifier (Bot) and Air Conditioner (IR Remote).
+
+#### [NEW] `.env.local`
+To securely store your SwitchBot Token and Secret.
+
+---
+
+### Frontend Application
+#### [NEW] `src/app/page.tsx`
+The main dashboard page where all components assemble.
+
+#### [NEW] `src/app/globals.css` & `src/app/page.module.css`
+Premium, modern UI design tokens. I will use glassmorphism, smooth animations, and rich dark mode typography (using Inter/Outfit).
+
+#### [NEW] `src/components/DeviceCard/DeviceCard.tsx`
+A unified interface for controlling the Humidifier and AC, along with the Environment Sensor.
+
+## Open Questions
+> [!WARNING]
+> 1. Regarding hosting, Vercel is the most seamless and robust free hosting for Next.js applications (better than GitHub Pages since we need API routes for security). Are you okay with me configuring this for Vercel?
+> 2. Do you have a preferred color scheme for Roofresh, or should I proceed with an earthy, modern agricultural green / sleek dark theme?
+
+## Verification Plan
+### Automated Tests
+- Build to ensure there are no compilation or typing issues.
+- Server route testing by invoking the Next.js API endpoints locally to verify connectivity with SwitchBot.
+
+### Manual Verification
+- Render the Next.js dev server to demonstrate the aesthetic and UI transitions.
+- Ensure clicking "Turn On Humidifier" successfully sends the command to Switchbot.

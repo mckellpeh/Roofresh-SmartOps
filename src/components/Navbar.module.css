@@ -1,0 +1,35 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--panel-bg);
+  border-bottom: 1px solid var(--panel-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(9, 23, 71, 0.03);
+}
+
+.navLink {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.2s ease;
+}
+
+.navLink:hover {
+  transform: scale(1.02);
+}
+
+.logoIcon {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.logoTitle {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+}
