@@ -4,6 +4,7 @@ export interface Container {
   hubId: string;
   acId: string;
   humidifierId: string;
+  imageUrl: string;
 }
 
 export const CONTAINERS: Container[] = [
@@ -13,5 +14,14 @@ export const CONTAINERS: Container[] = [
     hubId: process.env.NEXT_PUBLIC_SWITCHBOT_HUB_ID || 'E72E155B2FE9',
     acId: process.env.NEXT_PUBLIC_SWITCHBOT_AC_ID || '02-202404091830-26069818',
     humidifierId: process.env.NEXT_PUBLIC_SWITCHBOT_BOT_ID || 'D03534364B97',
+    imageUrl: '/containers/Left Container.jpeg',
+  },
+  {
+    id: 'container-right',
+    name: 'Container 2 (Right)',
+    hubId: 'Pending',
+    acId: 'Pending',
+    humidifierId: 'Pending',
+    imageUrl: '/containers/Right Container.jpeg',
   }
 ];

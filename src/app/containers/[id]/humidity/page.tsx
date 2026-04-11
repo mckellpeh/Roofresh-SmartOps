@@ -44,12 +44,12 @@ export default function HumidityControl() {
     <main className={styles.main}>
       <header className={styles.header}>
         <div>
-          <Link href={`/containers/${container.id}`} style={{ color: 'var(--primary)', textDecoration: 'none', marginBottom: '8px', display: 'inline-block' }}>
-            ← Back to Options
-          </Link>
           <h1 className={styles.title}>Humidity Control</h1>
           <p className={styles.subtitle}>{container.name} Humidifier</p>
         </div>
+        <Link href={`/containers/${container.id}`} style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>
+          Back to Options →
+        </Link>
       </header>
 
       <div className="glass-panel" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center', padding: '40px' }}>

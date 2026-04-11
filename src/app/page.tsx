@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import styles from './page.module.css';
 import { CONTAINERS, Container } from '@/config/containers';
 
@@ -40,9 +41,18 @@ function ContainerOverview({ container }: { container: Container }) {
   return (
     <Link href={`/containers/${container.id}`} className={styles.containerLink}>
       <div className="glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h2 style={{ fontSize: '1.5rem', color: 'var(--primary)', marginBottom: '8px' }}>{container.name}</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Click to view options</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <Image 
+            src={container.imageUrl} 
+            alt={container.name} 
+            width={80} 
+            height={80} 
+            style={{ borderRadius: '12px', objectFit: 'cover' }}
+          />
+          <div>
+            <h2 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '8px' }}>{container.name}</h2>
+            <p style={{ color: 'var(--text-muted)' }}>Click to view options</p>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: '24px' }}>
           <div style={{ textAlign: 'center' }}>

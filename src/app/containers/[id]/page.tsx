@@ -22,6 +22,9 @@ export default async function ContainerHub({ params }: { params: Promise<{ id: s
           <h1 className={styles.title}>{container.name}</h1>
           <p className={styles.subtitle}>Select a control module</p>
         </div>
+        <Link href="/" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>
+          Back to Dashboard →
+        </Link>
       </header>
 
       <div className={styles.grid}>

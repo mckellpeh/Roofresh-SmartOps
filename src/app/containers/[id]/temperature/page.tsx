@@ -51,12 +51,12 @@ export default function TemperatureControl() {
     <main className={styles.main}>
       <header className={styles.header}>
         <div>
-          <Link href={`/containers/${container.id}`} style={{ color: 'var(--primary)', textDecoration: 'none', marginBottom: '8px', display: 'inline-block' }}>
-            ← Back to Options
-          </Link>
           <h1 className={styles.title}>Temperature Control</h1>
           <p className={styles.subtitle}>{container.name} Air Conditioner</p>
         </div>
+        <Link href={`/containers/${container.id}`} style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>
+          Back to Options →
+        </Link>
       </header>
 
       <div className="glass-panel" style={{ maxWidth: '600px', margin: '0 auto' }}>
