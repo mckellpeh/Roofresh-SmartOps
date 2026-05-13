@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSwitchbotHeaders } from '@/lib/switchbot';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -21,7 +23,8 @@ export async function POST(request: Request) {
     const response = await fetch(`https://api.switch-bot.com/v1.1/devices/${deviceId}/commands`, {
       method: 'POST',
       headers,
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      cache: 'no-store'
     });
 
     if (!response.ok) {

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSwitchbotHeaders } from '@/lib/switchbot';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -14,6 +16,7 @@ export async function GET(request: Request) {
     const response = await fetch(`https://api.switch-bot.com/v1.1/devices/${hubId}/status`, {
       method: 'GET',
       headers,
+      cache: 'no-store'
     });
 
     if (!response.ok) {
