@@ -7,13 +7,14 @@ export async function getRedisClient() {
   if (!process.env.REDIS_URL) return null;
   
   try {
-    console.log('[Redis] Initializing standard Redis client connecting to Upstash...');
+    console.log('[Redis] Initializing standard Redis client...');
+    const isTls = process.env.REDIS_URL.startsWith('rediss://');
     const client = createClient({
       url: process.env.REDIS_URL,
-      socket: {
+      socket: isTls ? {
         tls: true,
         rejectUnauthorized: false
-      }
+      } : undefined
     });
     
     client.on('error', (err) => console.error('[Redis] Client Error:', err));
