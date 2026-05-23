@@ -19,9 +19,7 @@ Now you can smoothly zoom in and out of the timeline using your mouse scroll whe
 *   When you zoom in or out, the four primary statistics cards at the top (`Avg Temp`, `Max Temp`, `Min Temp`, and `Avg Humidity`) **update dynamically in real-time**!
 *   They instantly recalculate metrics representing *only the active window of timeline points currently visible on-screen*. 
 
----
-
-## 📸 visual Walkthrough of Zooming Behavior
+## 📸 Visual Walkthrough of Zooming & Diagnostics
 
 ### 🔍 Birds-Eye View (Zoomed Out to 7 Days):
 Scrolling down expands the scale, showing saw-tooth climate cycles across an entire week:
@@ -33,9 +31,15 @@ Scrolling up focuses in on a single day, letting you easily track exact heater/h
 
 ![Timeline Zoomed In](./images/zoomed_in_cockpit.png)
 
+### 📋 Glassmorphic System Logs Diagnostics:
+Clicking the new **`📊 Logs`** control button opens a beautiful, blurred modal showing live thermostat checks, heater/cooler activation timestamps, and safe dead-band alerts:
+
+![System Logs Modal](./images/open_logs_modal.png)
+
 ---
 
 ## 🧪 Verification & Build Status
 
 *   **TypeScript Verification:** 100% green compilation.
 *   **Native Event Binding:** Successfully verified using an automated browser subagent. The native event listeners attach/detach seamlessly on container tab toggling to prevent memory leaks.
+*   **Integrated Diagnostics Dialog:** Fully compiled and validated live in Chromium sessions.

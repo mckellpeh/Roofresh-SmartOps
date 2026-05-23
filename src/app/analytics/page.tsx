@@ -85,6 +85,29 @@ export default function AnalyticsPage() {
   // Dynamic zoom scaling points representation (Day: 96, Week: 168, Month: 240 default baselines)
   const [zoomPoints, setZoomPoints] = useState(168);
 
+  // Automation System Logs popup
+  const [automationLogs, setAutomationLogs] = useState<string[]>([]);
+  const [showLogsModal, setShowLogsModal] = useState(false);
+
+  const fetchAutomationLogs = async () => {
+    try {
+      const res = await fetch(`/api/auto-temp?containerId=${selectedContainerId}`);
+      const data = await res.json();
+      if (data && data.logs) {
+        setAutomationLogs(data.logs);
+      } else {
+        setAutomationLogs([]);
+      }
+    } catch (err) {
+      console.error('Failed to fetch automation logs', err);
+      setAutomationLogs([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchAutomationLogs();
+  }, [selectedContainerId]);
+
   // Initialize data baseline
   useEffect(() => {
     const baseTemp = selectedContainerId === 'container-left' ? 25.8 : 24.2;
@@ -595,7 +618,16 @@ export default function AnalyticsPage() {
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button className="glass-panel" style={detailStyles.iconBtn}>📅 Range</button>
-                <button className="glass-panel" style={detailStyles.iconBtn}>📊 Log</button>
+                <button 
+                  className="glass-panel" 
+                  style={{ ...detailStyles.iconBtn, cursor: 'pointer' }}
+                  onClick={() => {
+                    fetchAutomationLogs();
+                    setShowLogsModal(true);
+                  }}
+                >
+                  📊 Logs
+                </button>
               </div>
             </div>
 
@@ -758,6 +790,135 @@ export default function AnalyticsPage() {
           )}
         </div>
       </div>
+
+      {/* Glassmorphic Automation logs overlay */}
+      {showLogsModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div className="glass-panel static" style={{
+            width: '90%',
+            maxWidth: '680px',
+            maxHeight: '80vh',
+            padding: '28px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
+            border: '1px solid rgba(255, 255, 255, 0.5)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+            borderRadius: '24px',
+            overflow: 'hidden'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--panel-border)', paddingBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🤖 System & Automation Logs
+              </h3>
+              <button 
+                onClick={() => setShowLogsModal(false)}
+                style={{
+                  border: 'none',
+                  background: 'rgba(0, 0, 0, 0.05)',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  cursor: 'pointer',
+                  fontWeight: 800,
+                  color: 'var(--text-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '8px 4px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px'
+            }}>
+              {selectedContainerId === 'container-right' ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  No system logs. Right Container is pending connection.
+                </div>
+              ) : automationLogs.length > 0 ? (
+                automationLogs.slice().reverse().map((log, i) => {
+                  const isStable = log.includes('stable');
+                  const isCool = log.includes('cool') || log.includes('decreased');
+                  const isWarm = log.includes('warm') || log.includes('increased');
+                  
+                  let borderLeftColor = 'var(--panel-border)';
+                  let bg = 'rgba(0, 0, 0, 0.02)';
+                  
+                  if (isStable) {
+                    borderLeftColor = '#0070f3';
+                    bg = 'rgba(0, 112, 243, 0.04)';
+                  } else if (isCool) {
+                    borderLeftColor = 'var(--danger)';
+                    bg = 'rgba(255, 0, 0, 0.04)';
+                  } else if (isWarm) {
+                    borderLeftColor = 'var(--primary)';
+                    bg = 'rgba(255, 120, 0, 0.04)';
+                  }
+                  
+                  return (
+                    <div key={i} style={{
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      borderLeft: `4px solid ${borderLeftColor}`,
+                      backgroundColor: bg,
+                      fontSize: '13px',
+                      lineHeight: '1.5',
+                      color: 'var(--text-main)',
+                      fontFamily: 'monospace'
+                    }}>
+                      {log}
+                    </div>
+                  );
+                })
+              ) : (
+                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  No system automation activities recorded yet.
+                </div>
+              )}
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--panel-border)', paddingTop: '16px' }}>
+              <button 
+                className="glass-panel"
+                onClick={() => setShowLogsModal(false)}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: 'var(--primary)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                Close Logs
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
