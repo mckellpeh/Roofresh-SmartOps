@@ -80,3 +80,28 @@
   background: rgba(4, 139, 119, 0.05);
   color: var(--primary);
 }
+
+.leftNavContainer {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.leftNavLink {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+.leftNavLink:hover {
+  color: var(--primary);
+}
+
+@media (max-width: 900px) {
+  .leftNavContainer {
+    display: none;
+  }
+}

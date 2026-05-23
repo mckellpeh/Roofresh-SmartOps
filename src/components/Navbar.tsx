@@ -10,24 +10,33 @@ export default function Navbar() {
 
   return (
     <nav className={styles.navbar}>
-      <Link href="/" className={styles.navLink}>
-        <Image 
-          src="/icons/Logo.png" 
-          alt="Roofresh Logo Icon" 
-          width={80} 
-          height={80} 
-          className={styles.logoIcon}
-          priority
-        />
-        <Image 
-          src="/icons/Logo title.png" 
-          alt="Roofresh Logo Title" 
-          width={400} 
-          height={100} 
-          className={styles.logoTitle}
-          priority
-        />
-      </Link>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
+        <Link href="/" className={styles.navLink}>
+          <Image 
+            src="/icons/Logo.png" 
+            alt="Roofresh Logo Icon" 
+            width={80} 
+            height={80} 
+            className={styles.logoIcon}
+            priority
+          />
+          <Image 
+            src="/icons/Logo title.png" 
+            alt="Roofresh Logo Title" 
+            width={400} 
+            height={100} 
+            className={styles.logoTitle}
+            priority
+          />
+        </Link>
+
+        {/* Desktop horizontal navigation flanking the logo */}
+        <div className={styles.leftNavContainer}>
+          <Link href="/" className={styles.leftNavLink}>Dashboard</Link>
+          <Link href="/analytics" className={styles.leftNavLink}>Analytics</Link>
+          <Link href="/weather" className={styles.leftNavLink}>Weather</Link>
+        </div>
+      </div>
 
       <div style={{ position: 'relative' }}>
         <button className={styles.hamburgerBtn} onClick={() => setIsOpen(!isOpen)}>
