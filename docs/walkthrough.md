@@ -67,3 +67,5 @@ Applying a custom range displays a handsome glassmorphic active filter indicator
 *   **Native Event Binding:** Successfully verified using an automated browser subagent. The native event listeners attach/detach seamlessly on container tab toggling to prevent memory leaks.
 *   **Integrated Diagnostics Dialog:** Fully compiled and validated live in Chromium sessions.
 *   **Dynamic Calendar Range Picker:** Fully verified with dynamic day selections, disabled padding ranges, and clipped active timeline scroll scaling.
+*   **10-Minute Rate-Limiting Guard:** Evaluates and adjusts climate settings strictly at most once every 10 minutes to prevent high-frequency AC control spam, ensuring natural environment adjustments.
+*   **Manual Trigger Override:** Clicking "Trigger Review Now" successfully bypasses the rate limit for on-demand validation and instantaneous system reviews.

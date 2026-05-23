@@ -13,6 +13,7 @@ export interface AutoTempState {
   criticalHighTemp: number;
   driftStartedAt: string | null;
   lastAlertSentAt: string | null;
+  lastEvaluationTime: string | null;
 }
 
 const STATE_FILE_PATH = path.join(process.cwd(), 'src/config/auto-temp-state.json');
@@ -60,6 +61,7 @@ export function getAutoTempState(containerId: string): AutoTempState {
       criticalHighTemp: 28,
       driftStartedAt: null,
       lastAlertSentAt: null,
+      lastEvaluationTime: null,
     };
     store[containerId] = state;
     saveStore(store);
@@ -72,6 +74,7 @@ export function getAutoTempState(containerId: string): AutoTempState {
     if (state.criticalHighTemp === undefined) { state.criticalHighTemp = 28; modified = true; }
     if (state.driftStartedAt === undefined) { state.driftStartedAt = null; modified = true; }
     if (state.lastAlertSentAt === undefined) { state.lastAlertSentAt = null; modified = true; }
+    if (state.lastEvaluationTime === undefined) { state.lastEvaluationTime = null; modified = true; }
     if (modified) {
       store[containerId] = state;
       saveStore(store);
@@ -93,6 +96,7 @@ export function updateAutoTempState(containerId: string, updates: Partial<AutoTe
     criticalHighTemp: 28,
     driftStartedAt: null,
     lastAlertSentAt: null,
+    lastEvaluationTime: null,
   };
   
   const newState = {
@@ -152,9 +156,21 @@ async function sendAcControlCommand(acId: string, temp: number): Promise<boolean
   }
 }
 
-export async function evaluateAutoTemp(containerId: string, currentHubTemp: number, acId: string) {
+export async function evaluateAutoTemp(containerId: string, currentHubTemp: number, acId: string, bypassRateLimit = false) {
   const state = getAutoTempState(containerId);
   if (!state.enabled) return;
+
+  // Rate limit: strictly evaluate and adjust at most once every 10 minutes (600,000 ms) unless bypassed manually
+  const now = Date.now();
+  const lastEval = state.lastEvaluationTime ? new Date(state.lastEvaluationTime).getTime() : 0;
+  const elapsedMs = now - lastEval;
+  if (!bypassRateLimit && state.lastEvaluationTime && elapsedMs < 600000) {
+    console.log(`[Automation] Skipping evaluation for ${containerId}. Only ${Math.round(elapsedMs / 1000)}s has elapsed since last adjustment check (10 min limit).`);
+    return;
+  }
+
+  // Update evaluation timestamp immediately to lock other triggers out
+  updateAutoTempState(containerId, { lastEvaluationTime: new Date().toISOString() });
 
   const target = state.targetTemperature;
   const current = currentHubTemp;

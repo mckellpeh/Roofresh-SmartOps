@@ -45,11 +45,11 @@ export default function AutomationControl() {
   }, [state]);
 
   // Fetch container sensor data and automation configurations
-  const fetchData = async () => {
+  const fetchData = async (isManual = false) => {
     if (!container) return;
     try {
       // 1. Fetch current Hub readings (triggers server evaluation if enabled)
-      const hubRes = await fetch(`/api/devices?hubId=${container.hubId}`);
+      const hubRes = await fetch(`/api/devices?hubId=${container.hubId}${isManual ? '&manual=true' : ''}`);
       const hubData = await hubRes.json();
       if (hubData.body) {
         setCurrentTemp(hubData.body.temperature || 0);
@@ -70,9 +70,9 @@ export default function AutomationControl() {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(false);
     // Poll every 10 minutes to fetch logs, metrics and prevent frequent AC adjustments
-    const interval = setInterval(() => fetchData(), 600000);
+    const interval = setInterval(() => fetchData(false), 600000);
     return () => clearInterval(interval);
   }, [container?.id]);
 
@@ -163,7 +163,7 @@ export default function AutomationControl() {
   // Trigger manual check and correction immediately
   const handleManualCheck = async () => {
     setLoading(true);
-    await fetchData();
+    await fetchData(true);
     setLoading(false);
   };
 

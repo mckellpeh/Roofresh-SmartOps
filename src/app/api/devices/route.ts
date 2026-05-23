@@ -10,6 +10,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const hubId = searchParams.get('hubId') || process.env.SWITCHBOT_HUB_ID;
+    const manual = searchParams.get('manual') === 'true';
     
     if (!hubId) throw new Error('No Hub ID provided or configured');
 
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
         // Record reading to SwitchBot database log history
         addHistoryPoint(container.id, data.body.temperature, humidity);
         
-        await evaluateAutoTemp(container.id, data.body.temperature, container.acId);
+        await evaluateAutoTemp(container.id, data.body.temperature, container.acId, manual);
       } catch (evalErr) {
         console.error(`[Automation] Error during evaluation for container ${container.id}:`, evalErr);
       }
