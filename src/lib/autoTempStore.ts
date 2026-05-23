@@ -242,6 +242,8 @@ export async function evaluateAutoTemp(containerId: string, currentHubTemp: numb
   }
 
   // Drift check: +-1°C
+  const prefix = bypassRateLimit ? '[Manual Review] ' : '';
+
   if (current > target + 1) {
     // Too hot! Decrease AC target temp to cool down
     const newAcTemp = Math.max(16, lastAc - 1);
@@ -250,15 +252,15 @@ export async function evaluateAutoTemp(containerId: string, currentHubTemp: numb
       const success = await sendAcControlCommand(acId, newAcTemp);
       if (success) {
         updateAutoTempState(containerId, { lastAcTemperature: newAcTemp });
-        addLog(containerId, `Temp too high (${current.toFixed(1)}°C > Target ${target}°C + 1°C). Automatically decreased AC setting to ${newAcTemp}°C to cool.`);
+        addLog(containerId, `${prefix}Temp too high (${current.toFixed(1)}°C > Target ${target}°C + 1°C). Automatically decreased AC setting to ${newAcTemp}°C to cool.`);
       } else {
-        addLog(containerId, `Temp too high (${current.toFixed(1)}°C). Attempted to cool but AC command failed.`);
+        addLog(containerId, `${prefix}Temp too high (${current.toFixed(1)}°C). Attempted to cool but AC command failed.`);
       }
     } else {
       // AC is already set to the coldest setting
       const lastLog = state.logs[state.logs.length - 1];
-      if (!lastLog || !lastLog.includes('already at its minimum')) {
-        addLog(containerId, `Temp too high (${current.toFixed(1)}°C), but AC is already at its minimum setting (${newAcTemp}°C).`);
+      if (!lastLog || !lastLog.includes('already at its minimum') || bypassRateLimit) {
+        addLog(containerId, `${prefix}Temp too high (${current.toFixed(1)}°C), but AC is already at its minimum setting (${newAcTemp}°C).`);
       }
     }
   } else if (current < target - 1) {
@@ -269,23 +271,23 @@ export async function evaluateAutoTemp(containerId: string, currentHubTemp: numb
       const success = await sendAcControlCommand(acId, newAcTemp);
       if (success) {
         updateAutoTempState(containerId, { lastAcTemperature: newAcTemp });
-        addLog(containerId, `Temp too low (${current.toFixed(1)}°C < Target ${target}°C - 1°C). Automatically increased AC setting to ${newAcTemp}°C to warm.`);
+        addLog(containerId, `${prefix}Temp too low (${current.toFixed(1)}°C < Target ${target}°C - 1°C). Automatically increased AC setting to ${newAcTemp}°C to warm.`);
       } else {
-        addLog(containerId, `Temp too low (${current.toFixed(1)}°C). Attempted to warm but AC command failed.`);
+        addLog(containerId, `${prefix}Temp too low (${current.toFixed(1)}°C). Attempted to warm but AC command failed.`);
       }
     } else {
       // AC is already set to the warmest setting
       const lastLog = state.logs[state.logs.length - 1];
-      if (!lastLog || !lastLog.includes('already at its maximum')) {
-        addLog(containerId, `Temp too low (${current.toFixed(1)}°C), but AC is already at its maximum setting (${newAcTemp}°C).`);
+      if (!lastLog || !lastLog.includes('already at its maximum') || bypassRateLimit) {
+        addLog(containerId, `${prefix}Temp too low (${current.toFixed(1)}°C), but AC is already at its maximum setting (${newAcTemp}°C).`);
       }
     }
   } else {
     // In range
     const lastLog = state.logs[state.logs.length - 1];
     const isAlreadyStable = lastLog && lastLog.includes('stable');
-    if (!isAlreadyStable) {
-      addLog(containerId, `Temp is stable at ${current.toFixed(1)}°C (within Target ${target}°C ± 1°C). No adjustment needed.`);
+    if (!isAlreadyStable || bypassRateLimit) {
+      addLog(containerId, `${prefix}Temp is stable at ${current.toFixed(1)}°C (within Target ${target}°C ± 1°C). No adjustment needed.`);
     }
   }
 }
