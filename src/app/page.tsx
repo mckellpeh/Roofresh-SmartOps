@@ -34,7 +34,7 @@ function ContainerOverview({ container }: { container: Container }) {
     };
     
     fetchHubData();
-    const interval = setInterval(fetchHubData, 600000);
+    const interval = setInterval(fetchHubData, 30000);
     return () => clearInterval(interval);
   }, [container.hubId]);
 
