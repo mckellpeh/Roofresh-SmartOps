@@ -1,0 +1,385 @@
+{
+  "container-left": [
+    {
+      "timestamp": "2026-05-16T14:50:39.377Z",
+      "temperature": 24.5,
+      "humidity": 83
+    },
+    {
+      "timestamp": "2026-05-16T18:50:39.377Z",
+      "temperature": 24.3,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-16T22:50:39.377Z",
+      "temperature": 25,
+      "humidity": 89
+    },
+    {
+      "timestamp": "2026-05-17T02:50:39.377Z",
+      "temperature": 26.4,
+      "humidity": 89
+    },
+    {
+      "timestamp": "2026-05-17T06:50:39.377Z",
+      "temperature": 27.1,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-17T10:50:39.377Z",
+      "temperature": 26.5,
+      "humidity": 84
+    },
+    {
+      "timestamp": "2026-05-17T14:50:39.377Z",
+      "temperature": 24.9,
+      "humidity": 85
+    },
+    {
+      "timestamp": "2026-05-17T18:50:39.377Z",
+      "temperature": 25.3,
+      "humidity": 86
+    },
+    {
+      "timestamp": "2026-05-17T22:50:39.377Z",
+      "temperature": 26,
+      "humidity": 89
+    },
+    {
+      "timestamp": "2026-05-18T02:50:39.377Z",
+      "temperature": 27.4,
+      "humidity": 89
+    },
+    {
+      "timestamp": "2026-05-18T06:50:39.377Z",
+      "temperature": 28,
+      "humidity": 86
+    },
+    {
+      "timestamp": "2026-05-18T10:50:39.377Z",
+      "temperature": 27.4,
+      "humidity": 84
+    },
+    {
+      "timestamp": "2026-05-18T14:50:39.377Z",
+      "temperature": 25.6,
+      "humidity": 84
+    },
+    {
+      "timestamp": "2026-05-18T18:50:39.377Z",
+      "temperature": 25.3,
+      "humidity": 84
+    },
+    {
+      "timestamp": "2026-05-18T22:50:39.377Z",
+      "temperature": 25.9,
+      "humidity": 88
+    },
+    {
+      "timestamp": "2026-05-19T02:50:39.377Z",
+      "temperature": 27.7,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-19T06:50:39.377Z",
+      "temperature": 28.2,
+      "humidity": 85
+    },
+    {
+      "timestamp": "2026-05-19T10:50:39.377Z",
+      "temperature": 27.4,
+      "humidity": 81
+    },
+    {
+      "timestamp": "2026-05-19T14:50:39.377Z",
+      "temperature": 26.1,
+      "humidity": 82
+    },
+    {
+      "timestamp": "2026-05-19T18:50:39.377Z",
+      "temperature": 24.9,
+      "humidity": 83
+    },
+    {
+      "timestamp": "2026-05-19T22:50:39.377Z",
+      "temperature": 25.5,
+      "humidity": 86
+    },
+    {
+      "timestamp": "2026-05-20T02:50:39.377Z",
+      "temperature": 27,
+      "humidity": 86
+    },
+    {
+      "timestamp": "2026-05-20T06:50:39.377Z",
+      "temperature": 27.8,
+      "humidity": 84
+    },
+    {
+      "timestamp": "2026-05-20T10:50:39.377Z",
+      "temperature": 27,
+      "humidity": 80
+    },
+    {
+      "timestamp": "2026-05-20T14:50:39.377Z",
+      "temperature": 25.3,
+      "humidity": 81
+    },
+    {
+      "timestamp": "2026-05-20T18:50:39.377Z",
+      "temperature": 23.9,
+      "humidity": 83
+    },
+    {
+      "timestamp": "2026-05-20T22:50:39.377Z",
+      "temperature": 24.6,
+      "humidity": 86
+    },
+    {
+      "timestamp": "2026-05-21T02:50:39.377Z",
+      "temperature": 26.1,
+      "humidity": 86
+    },
+    {
+      "timestamp": "2026-05-21T06:50:39.377Z",
+      "temperature": 27,
+      "humidity": 82
+    },
+    {
+      "timestamp": "2026-05-21T10:50:39.377Z",
+      "temperature": 26.1,
+      "humidity": 80
+    },
+    {
+      "timestamp": "2026-05-21T14:50:39.377Z",
+      "temperature": 24.7,
+      "humidity": 80
+    },
+    {
+      "timestamp": "2026-05-21T18:50:39.377Z",
+      "temperature": 23.4,
+      "humidity": 85
+    },
+    {
+      "timestamp": "2026-05-21T22:50:39.377Z",
+      "temperature": 23.9,
+      "humidity": 88
+    },
+    {
+      "timestamp": "2026-05-22T02:50:39.377Z",
+      "temperature": 25.6,
+      "humidity": 86
+    },
+    {
+      "timestamp": "2026-05-22T06:50:39.377Z",
+      "temperature": 26.4,
+      "humidity": 85
+    },
+    {
+      "timestamp": "2026-05-22T10:50:39.377Z",
+      "temperature": 25.6,
+      "humidity": 81
+    },
+    {
+      "timestamp": "2026-05-22T14:50:39.377Z",
+      "temperature": 24.1,
+      "humidity": 83
+    },
+    {
+      "timestamp": "2026-05-22T18:50:39.377Z",
+      "temperature": 23.6,
+      "humidity": 86
+    },
+    {
+      "timestamp": "2026-05-22T22:50:39.377Z",
+      "temperature": 24.2,
+      "humidity": 89
+    },
+    {
+      "timestamp": "2026-05-23T02:50:39.377Z",
+      "temperature": 25.9,
+      "humidity": 89
+    },
+    {
+      "timestamp": "2026-05-23T06:50:39.377Z",
+      "temperature": 26.6,
+      "humidity": 85
+    },
+    {
+      "timestamp": "2026-05-23T10:50:39.377Z",
+      "temperature": 25.7,
+      "humidity": 84
+    },
+    {
+      "timestamp": "2026-05-23T14:50:39.377Z",
+      "temperature": 24.4,
+      "humidity": 84
+    },
+    {
+      "timestamp": "2026-05-23T15:10:23.002Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:10:23.416Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:10:51.930Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:10:52.489Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:10:54.973Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:10:55.387Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:21:32.312Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:21:32.720Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:30:45.959Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:30:46.378Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:31:40.061Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:31:40.625Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:31:42.926Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:31:43.349Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:33:21.025Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:33:21.439Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:33:24.474Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:33:24.883Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:33:30.860Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:33:31.265Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:33:36.979Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:33:37.403Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:34:37.171Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:35:37.160Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:36:24.696Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:36:25.098Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:36:30.341Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:36:30.732Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:36:38.221Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:37:00.295Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:37:30.313Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:37:38.767Z",
+      "temperature": 26.9,
+      "humidity": 87
+    },
+    {
+      "timestamp": "2026-05-23T15:38:00.306Z",
+      "temperature": 26.9,
+      "humidity": 87
+    }
+  ],
+  "container-right": []
+}

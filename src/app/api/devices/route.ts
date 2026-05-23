@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSwitchbotHeaders } from '@/lib/switchbot';
+import { CONTAINERS } from '@/config/containers';
+import { evaluateAutoTemp } from '@/lib/autoTempStore';
+import { addHistoryPoint } from '@/lib/deviceHistoryStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +27,20 @@ export async function GET(request: Request) {
     }
 
     const data = await response.json();
+    
+    // Check and trigger temperature automation if container is mapped
+    const container = CONTAINERS.find(c => c.hubId === hubId);
+    if (container && data.body && typeof data.body.temperature === 'number') {
+      try {
+        const humidity = typeof data.body.humidity === 'number' ? data.body.humidity : 0;
+        // Record reading to SwitchBot database log history
+        addHistoryPoint(container.id, data.body.temperature, humidity);
+        
+        await evaluateAutoTemp(container.id, data.body.temperature, container.acId);
+      } catch (evalErr) {
+        console.error(`[Automation] Error during evaluation for container ${container.id}:`, evalErr);
+      }
+    }
     
     return NextResponse.json(data);
   } catch (error: any) {

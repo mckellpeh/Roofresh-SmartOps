@@ -27,7 +27,7 @@ export default async function ContainerHub({ params }: { params: Promise<{ id: s
         </Link>
       </header>
 
-      <div className={styles.grid}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
         <Link href={`/containers/${container.id}/temperature`} style={{ textDecoration: 'none' }}>
           <div className="glass-panel" style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px' }}>
             <span style={{ fontSize: '3rem', marginBottom: '16px' }}>❄️</span>
@@ -40,6 +40,25 @@ export default async function ContainerHub({ params }: { params: Promise<{ id: s
             <span style={{ fontSize: '3rem', marginBottom: '16px' }}>💨</span>
             <h3 style={{ color: 'var(--text-main)', fontSize: '1.5rem' }}>Humidity Control</h3>
             <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>Toggle Humidifier Bot</p>
+          </div>
+        </Link>
+      </div>
+
+      <div style={{ marginTop: '24px' }}>
+        <Link href={`/containers/${container.id}/auto-temp`} style={{ textDecoration: 'none' }}>
+          <div className="glass-panel" style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'flex-start', 
+            gap: '30px', 
+            padding: '30px 40px',
+            textAlign: 'left'
+          }}>
+            <span style={{ fontSize: '3.5rem', flexShrink: 0 }}>🤖</span>
+            <div>
+              <h3 style={{ color: 'var(--text-main)', fontSize: '1.5rem', margin: 0 }}>Temperature Automation</h3>
+              <p style={{ color: 'var(--text-muted)', marginTop: '6px', margin: 0 }}>Auto-regulate container temperature, monitor SwitchBot activity logs, and configure email alert safety thresholds.</p>
+            </div>
           </div>
         </Link>
       </div>

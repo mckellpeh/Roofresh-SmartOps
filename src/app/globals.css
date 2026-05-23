@@ -56,6 +56,16 @@ h1, h2, h3, h4 {
   border-color: var(--primary-light);
 }
 
+.glass-panel.static {
+  transition: none;
+}
+
+.glass-panel.static:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(9, 23, 71, 0.05);
+  border-color: var(--panel-border);
+}
+
 .loading-spinner {
   display: inline-block;
   width: 24px;

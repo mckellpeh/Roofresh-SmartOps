@@ -39,8 +39,8 @@ export default function Navbar() {
         {isOpen && (
           <div className={styles.menuDropdown} onClick={() => setIsOpen(false)}>
             <Link href="/" className={styles.menuLink}>Dashboard</Link>
-            <Link href="/weather" className={styles.menuLink}>Weather</Link>
             <Link href="/analytics" className={styles.menuLink}>Analytics</Link>
+            <Link href="/weather" className={styles.menuLink}>Weather</Link>
           </div>
         )}
       </div>
