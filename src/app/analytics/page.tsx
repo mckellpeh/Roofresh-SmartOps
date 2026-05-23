@@ -241,6 +241,17 @@ export default function AnalyticsPage() {
     }
   };
 
+  // Load container selection from URL query parameters on mount if present
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const containerParam = params.get('containerId');
+      if (containerParam) {
+        setSelectedContainerId(containerParam);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     fetchAutomationLogs();
   }, [selectedContainerId]);

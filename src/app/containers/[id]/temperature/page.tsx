@@ -136,10 +136,35 @@ export default function TemperatureControl() {
             onClick={sendCommand} 
             disabled={loading}
             className={`${cardStyles.btn} ${cardStyles.active}`}
-            style={{ width: '100%', height: '54px', fontSize: '1.1rem' }}
+            style={{ width: '100%', height: '54px', fontSize: '1.1rem', marginBottom: '20px' }}
           >
             {loading ? <span className="loading-spinner"></span> : 'Send Command to AC'}
           </button>
+
+          <div style={{ borderTop: '1px solid var(--panel-border)', paddingTop: '20px', textAlign: 'center' }}>
+            <Link 
+              href={`/analytics?containerId=${container.id}`}
+              className={cardStyles.btn}
+              style={{ 
+                width: '100%', 
+                height: '48px', 
+                fontSize: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                backgroundColor: 'rgba(0, 112, 243, 0.1)',
+                color: '#0070f3',
+                borderColor: '#0070f3',
+                textDecoration: 'none',
+                fontWeight: 600,
+                borderRadius: '8px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              📊 Temperature Monitoring
+            </Link>
+          </div>
         </div>
       </div>
     </main>
