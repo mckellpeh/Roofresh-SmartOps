@@ -192,12 +192,18 @@ export async function sendEmailAlert(options: AlertOptions) {
 
 function appendAlertLog(containerId: string, type: 'drift' | 'critical', temp: number, email: string, isSandbox = false) {
   const timestamp = new Date().toLocaleString('en-SG', { timeZone: 'Asia/Singapore' });
-  const typeStr = type === 'critical' ? 'CRITICAL HIGH HEAT' : '1-HOUR DRIFT UNRESOLVED';
+  const state = getAutoTempState(containerId);
+  
+  let typeStr = '1-HOUR DRIFT UNRESOLVED';
+  if (type === 'critical') {
+    const isTooCold = temp <= (state.criticalLowTemp ?? 18);
+    typeStr = isTooCold ? 'CRITICAL COLD' : 'CRITICAL HIGH HEAT';
+  }
+  
   const prefix = isSandbox ? '[SANDBOX ALERT SENT]' : '[ALERT SENT]';
   const msg = `${prefix} Email alert dispatched to ${email} due to ${typeStr} (Current Temperature: ${temp.toFixed(1)}°C).`;
   
   // Directly write log to the store log list
-  const state = getAutoTempState(containerId);
   const logMessage = `[${timestamp}] ${msg}`;
   
   updateAutoTempState(containerId, {
@@ -205,3 +211,4 @@ function appendAlertLog(containerId: string, type: 'drift' | 'critical', temp: n
     lastAlertSentAt: new Date().toISOString(),
   });
 }
+
