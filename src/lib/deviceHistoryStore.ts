@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { kv } from '@vercel/kv';
+import { redisGet, redisSet } from './redisClient';
 
 export interface HistoryPoint {
   timestamp: string;
@@ -39,7 +40,20 @@ function generateMockHistory(containerId: string, baseTemp: number, baseHumid: n
 let cachedHistory: DeviceHistory | null = null;
 
 export async function getDeviceHistory(): Promise<DeviceHistory> {
-  // 1. Try Vercel KV if available (Production/Staging)
+  // 1. Try standard Redis first if configured
+  if (process.env.REDIS_URL) {
+    try {
+      const history = await redisGet<DeviceHistory>('device-history');
+      if (history) {
+        cachedHistory = history;
+        return history;
+      }
+    } catch (error) {
+      console.error('Failed to read device history from Redis:', error);
+    }
+  }
+
+  // 2. Try Vercel KV if available (Production/Staging)
   if (process.env.KV_REST_API_TOKEN) {
     try {
       const history = await kv.get<DeviceHistory>('device-history');
@@ -81,7 +95,17 @@ export async function getDeviceHistory(): Promise<DeviceHistory> {
 export async function saveDeviceHistory(history: DeviceHistory) {
   cachedHistory = history;
 
-  // 1. Try Vercel KV if available (Production/Staging)
+  // 1. Try standard Redis first if configured
+  if (process.env.REDIS_URL) {
+    try {
+      const success = await redisSet('device-history', history);
+      if (success) return;
+    } catch (error) {
+      console.error('Failed to save device history to Redis:', error);
+    }
+  }
+
+  // 2. Try Vercel KV if available (Production/Staging)
   if (process.env.KV_REST_API_TOKEN) {
     try {
       await kv.set('device-history', history);

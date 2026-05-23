@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { getSwitchbotHeaders } from './switchbot';
 import { kv } from '@vercel/kv';
+import { redisGet, redisSet } from './redisClient';
 
 export interface AutoTempState {
   enabled: boolean;
@@ -23,7 +24,20 @@ const STATE_FILE_PATH = path.join(process.cwd(), 'src/config/auto-temp-state.jso
 let inMemoryStore: Record<string, AutoTempState> | null = null;
 
 async function loadStore(): Promise<Record<string, AutoTempState>> {
-  // 1. Try Vercel KV if available (Production/Staging)
+  // 1. Try standard Redis first if configured
+  if (process.env.REDIS_URL) {
+    try {
+      const store = await redisGet<Record<string, AutoTempState>>('auto-temp-state');
+      if (store) {
+        inMemoryStore = store;
+        return store;
+      }
+    } catch (err) {
+      console.error('Failed to load auto temp store from Redis', err);
+    }
+  }
+
+  // 2. Try Vercel KV if available (Production/Staging)
   if (process.env.KV_REST_API_TOKEN) {
     try {
       const store = await kv.get<Record<string, AutoTempState>>('auto-temp-state');
@@ -58,7 +72,17 @@ async function loadStore(): Promise<Record<string, AutoTempState>> {
 async function saveStore(store: Record<string, AutoTempState>): Promise<void> {
   inMemoryStore = store;
 
-  // 1. Try Vercel KV if available (Production/Staging)
+  // 1. Try standard Redis first if configured
+  if (process.env.REDIS_URL) {
+    try {
+      const success = await redisSet('auto-temp-state', store);
+      if (success) return;
+    } catch (err) {
+      console.error('Failed to save auto temp store to Redis', err);
+    }
+  }
+
+  // 2. Try Vercel KV if available (Production/Staging)
   if (process.env.KV_REST_API_TOKEN) {
     try {
       await kv.set('auto-temp-state', store);
