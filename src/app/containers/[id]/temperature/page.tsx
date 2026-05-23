@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { CONTAINERS } from '@/config/containers';
@@ -16,6 +16,23 @@ export default function TemperatureControl() {
   const [temperature, setTemperature] = useState<number>(24);
   const [mode, setMode] = useState<number>(2); // 1: Auto, 2: Cool, 3: Dry, 4: Fan, 5: Heat
   const [fanSpeed, setFanSpeed] = useState<number>(1); // 1: Auto, 2: Low, 3: Medium, 4: High
+
+  // Fetch the last known temperature set by the automation system as default on page load
+  useEffect(() => {
+    if (!container) return;
+    const fetchLastAcTemp = async () => {
+      try {
+        const res = await fetch(`/api/auto-temp?containerId=${container.id}`);
+        const data = await res.json();
+        if (data && typeof data.lastAcTemperature === 'number') {
+          setTemperature(data.lastAcTemperature);
+        }
+      } catch (err) {
+        console.error('Failed to load last known AC temperature', err);
+      }
+    };
+    fetchLastAcTemp();
+  }, [container?.id]);
 
   if (!container) {
     return <main className={styles.main}>Container not found</main>;
