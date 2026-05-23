@@ -89,6 +89,39 @@ export default function AnalyticsPage() {
   const [automationLogs, setAutomationLogs] = useState<string[]>([]);
   const [showLogsModal, setShowLogsModal] = useState(false);
 
+  // Date Range Selection Popup
+  const [showRangeModal, setShowRangeModal] = useState(false);
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
+  // Temporary selections inside modal before clicking "Apply"
+  const [tempStartDate, setTempStartDate] = useState<string>('');
+  const [tempEndDate, setTempEndDate] = useState<string>('');
+
+  // Extract all unique dates available in the full dataset for selection
+  const getAvailableDates = () => {
+    const datesSet = new Set<string>();
+    fullDataset.forEach(p => {
+      if (p.timestamp) {
+        const dateStr = new Date(p.timestamp).toLocaleDateString('en-SG', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+        datesSet.add(dateStr);
+      }
+    });
+    return Array.from(datesSet);
+  };
+
+  const handleOpenRangeModal = () => {
+    const available = getAvailableDates();
+    if (available.length > 0) {
+      setTempStartDate(startDate || available[0]);
+      setTempEndDate(endDate || available[available.length - 1]);
+    }
+    setShowRangeModal(true);
+  };
+
   const fetchAutomationLogs = async () => {
     try {
       const res = await fetch(`/api/auto-temp?containerId=${selectedContainerId}`);
@@ -115,6 +148,8 @@ export default function AnalyticsPage() {
     const dataset = generateMassiveBaseline(timeMode, baseTemp, baseHumid);
     setFullDataset(dataset);
     setScrollOffset(0); // Reset scroll to most recent
+    setStartDate(null); // Reset date range filter
+    setEndDate(null);   // Reset date range filter
     
     const defaultZoom = timeMode === 'day' ? 96 : timeMode === 'week' ? 168 : 240;
     setZoomPoints(defaultZoom);
@@ -124,18 +159,39 @@ export default function AnalyticsPage() {
     setHoveredHumidIndex(null);
   }, [timeMode, selectedContainerId]);
 
-  // Sync active points when scrollOffset or zoomPoints updates
+  // Sync active points when scrollOffset, zoomPoints, or date filters update
   useEffect(() => {
     if (fullDataset.length === 0) return;
-    const maxOffset = fullDataset.length - zoomPoints;
+    
+    let datasetToSlice = fullDataset;
+    
+    // Apply Date Range Filter if set
+    if (startDate && endDate) {
+      const startMs = new Date(startDate).getTime();
+      // End of selected day (23:59:59.999)
+      const endMs = new Date(endDate).getTime() + 24 * 60 * 60 * 1000 - 1;
+      
+      datasetToSlice = fullDataset.filter(p => {
+        const timeMs = new Date(p.timestamp).getTime();
+        return timeMs >= startMs && timeMs <= endMs;
+      });
+    }
+    
+    if (datasetToSlice.length === 0) {
+      setActivePoints([]);
+      return;
+    }
+
+    const currentZoom = Math.min(zoomPoints, datasetToSlice.length);
+    const maxOffset = datasetToSlice.length - currentZoom;
     const currentOffset = Math.min(maxOffset, Math.max(0, scrollOffset));
     
-    const sliced = fullDataset.slice(
-      fullDataset.length - zoomPoints - currentOffset,
-      fullDataset.length - currentOffset
+    const sliced = datasetToSlice.slice(
+      datasetToSlice.length - currentZoom - currentOffset,
+      datasetToSlice.length - currentOffset
     );
     setActivePoints(sliced);
-  }, [scrollOffset, fullDataset, zoomPoints]);
+  }, [scrollOffset, fullDataset, zoomPoints, startDate, endDate]);
 
   // Dynamic scaling zoom handler using scroll wheel deltaY
   const handleZoom = (deltaY: number) => {
@@ -562,6 +618,43 @@ export default function AnalyticsPage() {
         ) : (
           /* Container 1 (Left) Consolidated Cockpit Views */
           <>
+            {startDate && endDate && (
+              <div className="glass-panel static" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 24px',
+                borderRadius: '16px',
+                backgroundColor: 'rgba(0, 112, 243, 0.05)',
+                border: '1.5px solid rgba(0, 112, 243, 0.15)',
+                width: '100%',
+                maxWidth: '1100px',
+                margin: '0 auto -10px auto'
+              }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#0070f3', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📅 Active Timeline Date Filter: <strong>{startDate}</strong> to <strong>{endDate}</strong>
+                </span>
+                <button 
+                  onClick={() => {
+                    setStartDate(null);
+                    setEndDate(null);
+                  }}
+                  style={{
+                    background: 'rgba(0, 112, 243, 0.1)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '4px 10px',
+                    color: '#0070f3',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  ✕ Clear Filter
+                </button>
+              </div>
+            )}
             {/* Live Indicator Metrics Row */}
             <section className="glass-panel static" style={detailStyles.metricsBar}>
               <div style={detailStyles.metricItem}>
@@ -617,7 +710,13 @@ export default function AnalyticsPage() {
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="glass-panel" style={detailStyles.iconBtn}>📅 Range</button>
+                <button 
+                  className="glass-panel" 
+                  style={{ ...detailStyles.iconBtn, cursor: 'pointer' }}
+                  onClick={handleOpenRangeModal}
+                >
+                  📅 Range
+                </button>
                 <button 
                   className="glass-panel" 
                   style={{ ...detailStyles.iconBtn, cursor: 'pointer' }}
@@ -915,6 +1014,172 @@ export default function AnalyticsPage() {
               >
                 Close Logs
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Glassmorphic Date Range Picker Modal */}
+      {showRangeModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div className="glass-panel static" style={{
+            width: '90%',
+            maxWidth: '500px',
+            padding: '28px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
+            border: '1px solid rgba(255, 255, 255, 0.5)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+            borderRadius: '24px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--panel-border)', paddingBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                📅 Select Climate Date Range
+              </h3>
+              <button 
+                onClick={() => setShowRangeModal(false)}
+                style={{
+                  border: 'none',
+                  background: 'rgba(0, 0, 0, 0.05)',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  cursor: 'pointer',
+                  fontWeight: 800,
+                  color: 'var(--text-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                Filter telemetry charts to show only records between your chosen start and end dates. Available dates are populated dynamically based on actual sensor database history.
+              </p>
+              
+              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '180px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-main)' }}>Start Date</label>
+                  <select 
+                    value={tempStartDate}
+                    onChange={(e) => setTempStartDate(e.target.value)}
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '12px',
+                      border: '1px solid var(--panel-border)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                      color: 'var(--text-main)',
+                      fontSize: '13.5px',
+                      fontWeight: 600,
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {getAvailableDates().map((d, idx) => (
+                      <option key={idx} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div style={{ flex: 1, minWidth: '180px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-main)' }}>End Date</label>
+                  <select 
+                    value={tempEndDate}
+                    onChange={(e) => setTempEndDate(e.target.value)}
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '12px',
+                      border: '1px solid var(--panel-border)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                      color: 'var(--text-main)',
+                      fontSize: '13.5px',
+                      fontWeight: 600,
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {getAvailableDates().map((d, idx) => (
+                      <option key={idx} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--panel-border)', paddingTop: '16px', gap: '12px' }}>
+              <button 
+                onClick={() => {
+                  setStartDate(null);
+                  setEndDate(null);
+                  setShowRangeModal(false);
+                }}
+                style={{
+                  padding: '10px 18px',
+                  backgroundColor: 'transparent',
+                  border: '1.5px dashed var(--panel-border)',
+                  color: 'var(--text-muted)',
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Reset / Show All
+              </button>
+              
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={() => setShowRangeModal(false)}
+                  style={{
+                    padding: '10px 18px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    setStartDate(tempStartDate);
+                    setEndDate(tempEndDate);
+                    setShowRangeModal(false);
+                  }}
+                  style={{
+                    padding: '10px 24px',
+                    backgroundColor: 'var(--primary)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Apply Range
+                </button>
+              </div>
             </div>
           </div>
         </div>

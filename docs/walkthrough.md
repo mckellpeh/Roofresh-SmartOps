@@ -19,6 +19,18 @@ Now you can smoothly zoom in and out of the timeline using your mouse scroll whe
 *   When you zoom in or out, the four primary statistics cards at the top (`Avg Temp`, `Max Temp`, `Min Temp`, and `Avg Humidity`) **update dynamically in real-time**!
 *   They instantly recalculate metrics representing *only the active window of timeline points currently visible on-screen*. 
 
+### 3. Integrated Glassmorphic System & Automation Logs
+*   **Centralized Diagnostics:** Relabeled the top control button to **`📊 Logs`**.
+*   **On-Demand Logs Overlay:** Clicking **`📊 Logs`** fetches the latest live auto-climate regulation activities directly from the database and displays them in a gorgeous glassmorphic modal overlay.
+*   **Vibrant State Indicators:** System events are beautifully color-coded (Blue for stable, Red for hot/cooling, Orange for cold/warming).
+
+### 4. Interactive Glassmorphic Date Range Picker
+*   **Dynamic Date Compilation:** Programmatically gathers unique dates present in the active sensor database timeline to ensure users only select dates that have actual logged sensor readings.
+*   **Timeline Date Filtering:** Choose a custom Start and End date range from a gorgeous pop-up dialog. Applying the range clips the graph and statistics *instantly* to the selected days.
+*   **Context-Aware Navigation:** Scroll-wheel zooming and drag-pan panning remain fully operational and dynamically scaled *within the filtered date window*!
+
+---
+
 ## 📸 Visual Walkthrough of Zooming & Diagnostics
 
 ### 🔍 Birds-Eye View (Zoomed Out to 7 Days):
@@ -36,6 +48,16 @@ Clicking the new **`📊 Logs`** control button opens a beautiful, blurred modal
 
 ![System Logs Modal](./images/open_logs_modal.png)
 
+### 📅 Glassmorphic Date Range Modal:
+Clicking the new **`📅 Range`** button triggers a gorgeous, custom range select modal:
+
+![Date Range Modal](./images/range_modal_open.png)
+
+### 📅 Filtered Climate Graph & Recalculation:
+Applying a custom range displays a handsome glassmorphic active filter indicator at the top and filters the graphs dynamically:
+
+![Date Range Applied](./images/date_range_applied.png)
+
 ---
 
 ## 🧪 Verification & Build Status
@@ -43,3 +65,4 @@ Clicking the new **`📊 Logs`** control button opens a beautiful, blurred modal
 *   **TypeScript Verification:** 100% green compilation.
 *   **Native Event Binding:** Successfully verified using an automated browser subagent. The native event listeners attach/detach seamlessly on container tab toggling to prevent memory leaks.
 *   **Integrated Diagnostics Dialog:** Fully compiled and validated live in Chromium sessions.
+*   **Dynamic Date Range Picker:** Fully verified with dynamic date dropdown selects and range clip recalculations.
