@@ -18,18 +18,25 @@ export interface AutoTempState {
 
 const STATE_FILE_PATH = path.join(process.cwd(), 'src/config/auto-temp-state.json');
 
-// In-memory fallback if file write fails or for fast local hot-reloads
-let inMemoryStore: Record<string, AutoTempState> = {};
+// In-memory fallback and cache for fast access and read-only environment persistence
+let inMemoryStore: Record<string, AutoTempState> | null = null;
 
 function loadStore(): Record<string, AutoTempState> {
+  if (inMemoryStore !== null) {
+    return inMemoryStore;
+  }
+
   try {
     if (fs.existsSync(STATE_FILE_PATH)) {
       const data = fs.readFileSync(STATE_FILE_PATH, 'utf-8');
-      return JSON.parse(data);
+      inMemoryStore = JSON.parse(data);
+      return inMemoryStore!;
     }
   } catch (err) {
     console.error('Failed to load auto temp store from file', err);
   }
+
+  inMemoryStore = {};
   return inMemoryStore;
 }
 
@@ -45,6 +52,7 @@ function saveStore(store: Record<string, AutoTempState>) {
     console.error('Failed to save auto temp store to file', err);
   }
 }
+
 
 export function getAutoTempState(containerId: string): AutoTempState {
   const store = loadStore();

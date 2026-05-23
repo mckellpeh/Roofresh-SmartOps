@@ -35,11 +35,18 @@ function generateMockHistory(containerId: string, baseTemp: number, baseHumid: n
   return points;
 }
 
+let cachedHistory: DeviceHistory | null = null;
+
 export function getDeviceHistory(): DeviceHistory {
+  if (cachedHistory !== null) {
+    return cachedHistory;
+  }
+
   try {
     if (fs.existsSync(historyFilePath)) {
       const data = fs.readFileSync(historyFilePath, 'utf8');
-      return JSON.parse(data);
+      cachedHistory = JSON.parse(data);
+      return cachedHistory!;
     }
   } catch (error) {
     console.error('Failed to read device history file, generating mock data...', error);
@@ -52,10 +59,12 @@ export function getDeviceHistory(): DeviceHistory {
   };
   
   saveDeviceHistory(mockData);
+  cachedHistory = mockData;
   return mockData;
 }
 
 export function saveDeviceHistory(history: DeviceHistory) {
+  cachedHistory = history;
   try {
     const dir = path.dirname(historyFilePath);
     if (!fs.existsSync(dir)) {
@@ -66,6 +75,7 @@ export function saveDeviceHistory(history: DeviceHistory) {
     console.error('Failed to write device history file:', error);
   }
 }
+
 
 export function addHistoryPoint(containerId: string, temperature: number, humidity: number) {
   const history = getDeviceHistory();
