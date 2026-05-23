@@ -2,10 +2,8 @@
   "container-left": {
     "enabled": true,
     "targetTemperature": 26,
-    "lastAcTemperature": 30,
+    "lastAcTemperature": 25,
     "logs": [
-      "[23/05/2026, 6:36:29 pm] Temp too high (27.1°C > Target 26°C + 1°C). Automatically decreased AC setting to 23°C to cool.",
-      "[23/05/2026, 6:36:59 pm] Temp too high (27.1°C > Target 26°C + 1°C). Automatically decreased AC setting to 22°C to cool.",
       "[23/05/2026, 6:37:29 pm] Temp is stable at 26.6°C (within Target 26°C ± 1°C). No adjustment needed.",
       "[23/05/2026, 6:43:59 pm] Temp too low (24.5°C < Target 26°C - 1°C). Automatically increased AC setting to 23°C to warm.",
       "[23/05/2026, 6:44:29 pm] Temp too low (24.5°C < Target 26°C - 1°C). Automatically increased AC setting to 24°C to warm.",
@@ -53,7 +51,9 @@
       "[24/05/2026, 12:18:23 am] Temp is stable at 25.2°C (within Target 26°C ± 1°C). No adjustment needed.",
       "[24/05/2026, 12:37:44 am] [Manual Review] Temp is stable at 25.4°C (within Target 26°C ± 1°C). No adjustment needed.",
       "[24/05/2026, 12:57:14 am] [Manual Review] Temp is stable at 25.7°C (within Target 26°C ± 1°C). No adjustment needed.",
-      "[24/05/2026, 1:20:02 am] [Manual Review] Temp is stable at 26.0°C (within Target 26°C ± 1°C). No adjustment needed."
+      "[24/05/2026, 1:20:02 am] [Manual Review] Temp is stable at 26.0°C (within Target 26°C ± 1°C). No adjustment needed.",
+      "[24/05/2026, 1:31:54 am] [Manual Override] Air Conditioner set manually to 25°C (Mode: Cool, Fan: Auto, Power: ON).",
+      "[24/05/2026, 1:32:12 am] [Manual Override] Air Conditioner set manually to 25°C (Mode: Cool, Fan: Auto, Power: ON)."
     ],
     "alertEmail": "roofreshgroup@gmail.com",
     "criticalHighTemp": 29,
@@ -61,7 +61,7 @@
     "lastAlertSentAt": "2026-05-23T07:25:54.601Z",
     "alertsEnabled": true,
     "criticalLowTemp": 23,
-    "lastEvaluationTime": "2026-05-23T17:20:02.284Z"
+    "lastEvaluationTime": "2026-05-23T17:30:10.102Z"
   },
   "container-right": {
     "enabled": false,
