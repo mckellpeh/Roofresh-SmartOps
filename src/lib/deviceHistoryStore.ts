@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { kv } from '@vercel/kv';
 
 export interface HistoryPoint {
   timestamp: string;
@@ -37,7 +38,21 @@ function generateMockHistory(containerId: string, baseTemp: number, baseHumid: n
 
 let cachedHistory: DeviceHistory | null = null;
 
-export function getDeviceHistory(): DeviceHistory {
+export async function getDeviceHistory(): Promise<DeviceHistory> {
+  // 1. Try Vercel KV if available (Production/Staging)
+  if (process.env.KV_REST_API_TOKEN) {
+    try {
+      const history = await kv.get<DeviceHistory>('device-history');
+      if (history) {
+        cachedHistory = history;
+        return history;
+      }
+    } catch (error) {
+      console.error('Failed to read device history from Vercel KV:', error);
+    }
+  }
+
+  // 2. Fall back to local file system or memory cache
   if (cachedHistory !== null) {
     return cachedHistory;
   }
@@ -58,13 +73,25 @@ export function getDeviceHistory(): DeviceHistory {
     'container-right': []
   };
   
-  saveDeviceHistory(mockData);
+  await saveDeviceHistory(mockData);
   cachedHistory = mockData;
   return mockData;
 }
 
-export function saveDeviceHistory(history: DeviceHistory) {
+export async function saveDeviceHistory(history: DeviceHistory) {
   cachedHistory = history;
+
+  // 1. Try Vercel KV if available (Production/Staging)
+  if (process.env.KV_REST_API_TOKEN) {
+    try {
+      await kv.set('device-history', history);
+      return;
+    } catch (error) {
+      console.error('Failed to save device history to Vercel KV:', error);
+    }
+  }
+
+  // 2. Fall back to local file system (Local Dev)
   try {
     const dir = path.dirname(historyFilePath);
     if (!fs.existsSync(dir)) {
@@ -77,8 +104,8 @@ export function saveDeviceHistory(history: DeviceHistory) {
 }
 
 
-export function addHistoryPoint(containerId: string, temperature: number, humidity: number) {
-  const history = getDeviceHistory();
+export async function addHistoryPoint(containerId: string, temperature: number, humidity: number) {
+  const history = await getDeviceHistory();
   if (!history[containerId]) {
     history[containerId] = [];
   }
@@ -95,6 +122,6 @@ export function addHistoryPoint(containerId: string, temperature: number, humidi
     history[containerId] = history[containerId].slice(-500);
   }
   
-  saveDeviceHistory(history);
+  await saveDeviceHistory(history);
   return history;
 }

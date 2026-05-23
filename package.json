@@ -8,6 +8,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vercel/kv": "^3.0.0",
     "next": "^16.2.3",
     "nodemailer": "^8.0.7",
     "react": "^19.2.5",

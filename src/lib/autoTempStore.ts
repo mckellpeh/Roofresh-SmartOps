@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { getSwitchbotHeaders } from './switchbot';
+import { kv } from '@vercel/kv';
 
 export interface AutoTempState {
   enabled: boolean;
@@ -21,7 +22,21 @@ const STATE_FILE_PATH = path.join(process.cwd(), 'src/config/auto-temp-state.jso
 // In-memory fallback and cache for fast access and read-only environment persistence
 let inMemoryStore: Record<string, AutoTempState> | null = null;
 
-function loadStore(): Record<string, AutoTempState> {
+async function loadStore(): Promise<Record<string, AutoTempState>> {
+  // 1. Try Vercel KV if available (Production/Staging)
+  if (process.env.KV_REST_API_TOKEN) {
+    try {
+      const store = await kv.get<Record<string, AutoTempState>>('auto-temp-state');
+      if (store) {
+        inMemoryStore = store;
+        return store;
+      }
+    } catch (err) {
+      console.error('Failed to load auto temp store from Vercel KV', err);
+    }
+  }
+
+  // 2. Fall back to local memory cache or local file
   if (inMemoryStore !== null) {
     return inMemoryStore;
   }
@@ -40,8 +55,20 @@ function loadStore(): Record<string, AutoTempState> {
   return inMemoryStore;
 }
 
-function saveStore(store: Record<string, AutoTempState>) {
+async function saveStore(store: Record<string, AutoTempState>): Promise<void> {
   inMemoryStore = store;
+
+  // 1. Try Vercel KV if available (Production/Staging)
+  if (process.env.KV_REST_API_TOKEN) {
+    try {
+      await kv.set('auto-temp-state', store);
+      return;
+    } catch (err) {
+      console.error('Failed to save auto temp store to Vercel KV', err);
+    }
+  }
+
+  // 2. Fall back to local file system (Local Dev)
   try {
     const dir = path.dirname(STATE_FILE_PATH);
     if (!fs.existsSync(dir)) {
@@ -53,9 +80,8 @@ function saveStore(store: Record<string, AutoTempState>) {
   }
 }
 
-
-export function getAutoTempState(containerId: string): AutoTempState {
-  const store = loadStore();
+export async function getAutoTempState(containerId: string): Promise<AutoTempState> {
+  const store = await loadStore();
   let state = store[containerId];
   if (!state) {
     state = {
@@ -72,7 +98,7 @@ export function getAutoTempState(containerId: string): AutoTempState {
       lastEvaluationTime: null,
     };
     store[containerId] = state;
-    saveStore(store);
+    await saveStore(store);
   } else {
     // Fill in defaults for missing fields dynamically
     let modified = false;
@@ -85,14 +111,14 @@ export function getAutoTempState(containerId: string): AutoTempState {
     if (state.lastEvaluationTime === undefined) { state.lastEvaluationTime = null; modified = true; }
     if (modified) {
       store[containerId] = state;
-      saveStore(store);
+      await saveStore(store);
     }
   }
   return state;
 }
 
-export function updateAutoTempState(containerId: string, updates: Partial<AutoTempState>): AutoTempState {
-  const store = loadStore();
+export async function updateAutoTempState(containerId: string, updates: Partial<AutoTempState>): Promise<AutoTempState> {
+  const store = await loadStore();
   const currentState = store[containerId] || {
     enabled: false,
     targetTemperature: 24,
@@ -114,16 +140,16 @@ export function updateAutoTempState(containerId: string, updates: Partial<AutoTe
   };
   
   store[containerId] = newState;
-  saveStore(store);
+  await saveStore(store);
   return newState;
 }
 
-export function addLog(containerId: string, message: string) {
-  const state = getAutoTempState(containerId);
+export async function addLog(containerId: string, message: string) {
+  const state = await getAutoTempState(containerId);
   const timestamp = new Date().toLocaleString('en-SG', { timeZone: 'Asia/Singapore' });
   const logMessage = `[${timestamp}] ${message}`;
   
-  updateAutoTempState(containerId, {
+  await updateAutoTempState(containerId, {
     logs: [...state.logs, logMessage],
   });
 }
@@ -165,7 +191,7 @@ async function sendAcControlCommand(acId: string, temp: number): Promise<boolean
 }
 
 export async function evaluateAutoTemp(containerId: string, currentHubTemp: number, acId: string, bypassRateLimit = false) {
-  const state = getAutoTempState(containerId);
+  const state = await getAutoTempState(containerId);
   if (!state.enabled) return;
 
   // Rate limit: strictly evaluate and adjust at most once every 10 minutes (600,000 ms) unless bypassed manually
@@ -178,7 +204,7 @@ export async function evaluateAutoTemp(containerId: string, currentHubTemp: numb
   }
 
   // Update evaluation timestamp immediately to lock other triggers out
-  updateAutoTempState(containerId, { lastEvaluationTime: new Date().toISOString() });
+  await updateAutoTempState(containerId, { lastEvaluationTime: new Date().toISOString() });
 
   const target = state.targetTemperature;
   const current = currentHubTemp;
@@ -193,12 +219,12 @@ export async function evaluateAutoTemp(containerId: string, currentHubTemp: numb
   if (driftActive) {
     if (!state.driftStartedAt) {
       nextDriftStartedAt = new Date().toISOString();
-      updateAutoTempState(containerId, { driftStartedAt: nextDriftStartedAt });
+      await updateAutoTempState(containerId, { driftStartedAt: nextDriftStartedAt });
     }
   } else {
     if (state.driftStartedAt) {
       nextDriftStartedAt = null;
-      updateAutoTempState(containerId, { driftStartedAt: null });
+      await updateAutoTempState(containerId, { driftStartedAt: null });
     }
   }
 
@@ -211,7 +237,7 @@ export async function evaluateAutoTemp(containerId: string, currentHubTemp: numb
     if (!state.lastAlertSentAt || elapsedMinutes >= 120) {
       try {
         const { sendEmailAlert } = await import('./alerts');
-        sendEmailAlert({
+        await sendEmailAlert({
           containerId,
           type: 'critical',
           currentTemp: current,
@@ -235,7 +261,7 @@ export async function evaluateAutoTemp(containerId: string, currentHubTemp: numb
       if (!state.lastAlertSentAt || elapsedMinutes >= 120) {
         try {
           const { sendEmailAlert } = await import('./alerts');
-          sendEmailAlert({
+          await sendEmailAlert({
             containerId,
             type: 'drift',
             currentTemp: current,
@@ -259,16 +285,16 @@ export async function evaluateAutoTemp(containerId: string, currentHubTemp: numb
     if (newAcTemp !== lastAc || !state.logs.length) {
       const success = await sendAcControlCommand(acId, newAcTemp);
       if (success) {
-        updateAutoTempState(containerId, { lastAcTemperature: newAcTemp });
-        addLog(containerId, `${prefix}Temp too high (${current.toFixed(1)}°C > Target ${target}°C + 1°C). Automatically decreased AC setting to ${newAcTemp}°C to cool.`);
+        await updateAutoTempState(containerId, { lastAcTemperature: newAcTemp });
+        await addLog(containerId, `${prefix}Temp too high (${current.toFixed(1)}°C > Target ${target}°C + 1°C). Automatically decreased AC setting to ${newAcTemp}°C to cool.`);
       } else {
-        addLog(containerId, `${prefix}Temp too high (${current.toFixed(1)}°C). Attempted to cool but AC command failed.`);
+        await addLog(containerId, `${prefix}Temp too high (${current.toFixed(1)}°C). Attempted to cool but AC command failed.`);
       }
     } else {
       // AC is already set to the coldest setting
       const lastLog = state.logs[state.logs.length - 1];
       if (!lastLog || !lastLog.includes('already at its minimum') || bypassRateLimit) {
-        addLog(containerId, `${prefix}Temp too high (${current.toFixed(1)}°C), but AC is already at its minimum setting (${newAcTemp}°C).`);
+        await addLog(containerId, `${prefix}Temp too high (${current.toFixed(1)}°C), but AC is already at its minimum setting (${newAcTemp}°C).`);
       }
     }
   } else if (current < target - 1) {
@@ -278,16 +304,16 @@ export async function evaluateAutoTemp(containerId: string, currentHubTemp: numb
     if (newAcTemp !== lastAc || !state.logs.length) {
       const success = await sendAcControlCommand(acId, newAcTemp);
       if (success) {
-        updateAutoTempState(containerId, { lastAcTemperature: newAcTemp });
-        addLog(containerId, `${prefix}Temp too low (${current.toFixed(1)}°C < Target ${target}°C - 1°C). Automatically increased AC setting to ${newAcTemp}°C to warm.`);
+        await updateAutoTempState(containerId, { lastAcTemperature: newAcTemp });
+        await addLog(containerId, `${prefix}Temp too low (${current.toFixed(1)}°C < Target ${target}°C - 1°C). Automatically increased AC setting to ${newAcTemp}°C to warm.`);
       } else {
-        addLog(containerId, `${prefix}Temp too low (${current.toFixed(1)}°C). Attempted to warm but AC command failed.`);
+        await addLog(containerId, `${prefix}Temp too low (${current.toFixed(1)}°C). Attempted to warm but AC command failed.`);
       }
     } else {
       // AC is already set to the warmest setting
       const lastLog = state.logs[state.logs.length - 1];
       if (!lastLog || !lastLog.includes('already at its maximum') || bypassRateLimit) {
-        addLog(containerId, `${prefix}Temp too low (${current.toFixed(1)}°C), but AC is already at its maximum setting (${newAcTemp}°C).`);
+        await addLog(containerId, `${prefix}Temp too low (${current.toFixed(1)}°C), but AC is already at its maximum setting (${newAcTemp}°C).`);
       }
     }
   } else {
@@ -295,7 +321,7 @@ export async function evaluateAutoTemp(containerId: string, currentHubTemp: numb
     const lastLog = state.logs[state.logs.length - 1];
     const isAlreadyStable = lastLog && lastLog.includes('stable');
     if (!isAlreadyStable || bypassRateLimit) {
-      addLog(containerId, `${prefix}Temp is stable at ${current.toFixed(1)}°C (within Target ${target}°C ± 1°C). No adjustment needed.`);
+      await addLog(containerId, `${prefix}Temp is stable at ${current.toFixed(1)}°C (within Target ${target}°C ± 1°C). No adjustment needed.`);
     }
   }
 }

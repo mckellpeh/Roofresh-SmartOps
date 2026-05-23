@@ -17,7 +17,7 @@ export async function sendEmailAlert(options: AlertOptions) {
   const { containerId, type, currentTemp, driftStartedAt, targetTemp, criticalLimit } = options;
   const container = CONTAINERS.find(c => c.id === containerId);
   const containerName = container ? container.name : containerId;
-  const state = getAutoTempState(containerId);
+  const state = await getAutoTempState(containerId);
   
   if (!state.alertEmail) {
     console.log(`[Alert System] Alert condition met for ${containerName}, but no alert email is configured.`);
@@ -132,7 +132,7 @@ export async function sendEmailAlert(options: AlertOptions) {
         const data = await response.json();
         console.log(`[Alert System] Email sent successfully via Resend. ID: ${data.id}`);
         // Log notification success in store
-        appendAlertLog(containerId, type, currentTemp, state.alertEmail);
+        await appendAlertLog(containerId, type, currentTemp, state.alertEmail);
         return;
       } else {
         const errText = await response.text();
@@ -170,7 +170,7 @@ export async function sendEmailAlert(options: AlertOptions) {
       });
 
       console.log(`[Alert System] Email sent successfully via SMTP.`);
-      appendAlertLog(containerId, type, currentTemp, state.alertEmail);
+      await appendAlertLog(containerId, type, currentTemp, state.alertEmail);
       return;
     } catch (err) {
       console.error(`[Alert System] SMTP Send failed or nodemailer is missing:`, err);
@@ -187,12 +187,12 @@ export async function sendEmailAlert(options: AlertOptions) {
   console.log(`DEVELOPER NOTE: Configure RESEND_API_KEY or SMTP credentials in your .env.local to send real emails!`);
   console.log('========================================================================');
 
-  appendAlertLog(containerId, type, currentTemp, state.alertEmail, true);
+  await appendAlertLog(containerId, type, currentTemp, state.alertEmail, true);
 }
 
-function appendAlertLog(containerId: string, type: 'drift' | 'critical', temp: number, email: string, isSandbox = false) {
+async function appendAlertLog(containerId: string, type: 'drift' | 'critical', temp: number, email: string, isSandbox = false) {
   const timestamp = new Date().toLocaleString('en-SG', { timeZone: 'Asia/Singapore' });
-  const state = getAutoTempState(containerId);
+  const state = await getAutoTempState(containerId);
   
   let typeStr = '1-HOUR DRIFT UNRESOLVED';
   if (type === 'critical') {
@@ -206,7 +206,7 @@ function appendAlertLog(containerId: string, type: 'drift' | 'critical', temp: n
   // Directly write log to the store log list
   const logMessage = `[${timestamp}] ${msg}`;
   
-  updateAutoTempState(containerId, {
+  await updateAutoTempState(containerId, {
     logs: [...state.logs, logMessage],
     lastAlertSentAt: new Date().toISOString(),
   });

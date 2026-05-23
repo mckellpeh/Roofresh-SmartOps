@@ -54,8 +54,8 @@ export async function POST(request: Request) {
 
           const logMsg = `[Manual Override] Air Conditioner set manually to ${temp}°C (Mode: ${modeStr}, Fan: ${fanStr}, Power: ${powerState}).`;
           
-          addLog(container.id, logMsg);
-          updateAutoTempState(container.id, { lastAcTemperature: temp });
+          await addLog(container.id, logMsg);
+          await updateAutoTempState(container.id, { lastAcTemperature: temp });
         }
       } catch (err) {
         console.error('Error logging manual control override:', err);

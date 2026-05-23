@@ -13,10 +13,10 @@ export async function GET(request: Request) {
     const { getAutoTempState, updateAutoTempState } = await import('@/lib/autoTempStore');
     const { sendEmailAlert } = await import('@/lib/alerts');
     
-    const originalState = getAutoTempState(containerId);
+    const originalState = await getAutoTempState(containerId);
     
     // Temporarily set email and reset throttling to force immediate dispatch
-    updateAutoTempState(containerId, {
+    await updateAutoTempState(containerId, {
       alertEmail: email,
       lastAlertSentAt: null
     });
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     });
     
     // Restore original alert configurations
-    updateAutoTempState(containerId, {
+    await updateAutoTempState(containerId, {
       alertEmail: originalState.alertEmail,
       lastAlertSentAt: originalState.lastAlertSentAt
     });

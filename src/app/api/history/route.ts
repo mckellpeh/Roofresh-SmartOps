@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const history = getDeviceHistory();
+    const history = await getDeviceHistory();
     return NextResponse.json(history);
   } catch (error: any) {
     console.error('Failed to get history logs:', error);

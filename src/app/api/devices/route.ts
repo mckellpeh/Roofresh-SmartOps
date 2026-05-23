@@ -35,7 +35,7 @@ export async function GET(request: Request) {
       try {
         const humidity = typeof data.body.humidity === 'number' ? data.body.humidity : 0;
         // Record reading to SwitchBot database log history
-        addHistoryPoint(container.id, data.body.temperature, humidity);
+        await addHistoryPoint(container.id, data.body.temperature, humidity);
         
         await evaluateAutoTemp(container.id, data.body.temperature, container.acId, manual);
       } catch (evalErr) {
