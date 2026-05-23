@@ -318,10 +318,6 @@ export async function evaluateAutoTemp(containerId: string, currentHubTemp: numb
     }
   } else {
     // In range
-    const lastLog = state.logs[state.logs.length - 1];
-    const isAlreadyStable = lastLog && lastLog.includes('stable');
-    if (!isAlreadyStable || bypassRateLimit) {
-      await addLog(containerId, `${prefix}Temp is stable at ${current.toFixed(1)}°C (within Target ${target}°C ± 1°C). No adjustment needed.`);
-    }
+    await addLog(containerId, `${prefix}Temp is stable at ${current.toFixed(1)}°C (within Target ${target}°C ± 1°C). No adjustment needed.`);
   }
 }
