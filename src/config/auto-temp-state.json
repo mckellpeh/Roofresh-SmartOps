@@ -2,12 +2,8 @@
   "container-left": {
     "enabled": true,
     "targetTemperature": 26,
-    "lastAcTemperature": 30,
+    "lastAcTemperature": 26,
     "logs": [
-      "[23/05/2026, 3:25:18 pm] Critical high temperature threshold adjusted to: 30°C",
-      "[23/05/2026, 3:25:19 pm] Temp is stable at 25.2°C (within Target 26°C ± 1°C). No adjustment needed.",
-      "[23/05/2026, 3:25:54 pm] Critical high temperature threshold adjusted to: 25°C",
-      "[23/05/2026, 3:25:54 pm] [SANDBOX ALERT SENT] Email alert dispatched to mckellpeh@gmail.com due to CRITICAL HIGH HEAT (Current Temperature: 25.2°C).",
       "[23/05/2026, 3:25:54 pm] Temp is stable at 25.2°C (within Target 26°C ± 1°C). No adjustment needed.",
       "[23/05/2026, 3:29:05 pm] [SANDBOX ALERT SENT] Email alert dispatched to mckellpeh@gmail.com due to CRITICAL HIGH HEAT (Current Temperature: 29.5°C).",
       "[23/05/2026, 3:29:27 pm] Temp is stable at 25.2°C (within Target 26°C ± 1°C). No adjustment needed.",
@@ -53,11 +49,15 @@
       "[23/05/2026, 6:46:59 pm] Temp too low (24.1°C < Target 26°C - 1°C). Automatically increased AC setting to 29°C to warm.",
       "[23/05/2026, 6:47:29 pm] Temp too low (24.1°C < Target 26°C - 1°C). Automatically increased AC setting to 30°C to warm.",
       "[23/05/2026, 6:47:59 pm] Temp too low (24.1°C), but AC is already at its maximum setting (30°C).",
-      "[23/05/2026, 7:11:58 pm] Temp is stable at 25.0°C (within Target 26°C ± 1°C). No adjustment needed."
+      "[23/05/2026, 7:11:58 pm] Temp is stable at 25.0°C (within Target 26°C ± 1°C). No adjustment needed.",
+      "[23/05/2026, 11:43:31 pm] Temp too high (27.1°C > Target 26°C + 1°C). Automatically decreased AC setting to 29°C to cool.",
+      "[23/05/2026, 11:43:58 pm] Temp too high (27.1°C > Target 26°C + 1°C). Automatically decreased AC setting to 28°C to cool.",
+      "[23/05/2026, 11:44:00 pm] Temp too high (27.1°C > Target 26°C + 1°C). Automatically decreased AC setting to 27°C to cool.",
+      "[23/05/2026, 11:44:31 pm] Temp too high (27.1°C > Target 26°C + 1°C). Automatically decreased AC setting to 26°C to cool."
     ],
     "alertEmail": "roofreshgroup@gmail.com",
     "criticalHighTemp": 29,
-    "driftStartedAt": null,
+    "driftStartedAt": "2026-05-23T15:43:30.298Z",
     "lastAlertSentAt": "2026-05-23T07:25:54.601Z",
     "alertsEnabled": true,
     "criticalLowTemp": 23

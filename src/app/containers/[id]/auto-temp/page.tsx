@@ -71,8 +71,8 @@ export default function AutomationControl() {
 
   useEffect(() => {
     fetchData();
-    // Poll every 30 seconds to fetch logs and current metrics
-    const interval = setInterval(() => fetchData(), 30000);
+    // Poll every 10 minutes to fetch logs, metrics and prevent frequent AC adjustments
+    const interval = setInterval(() => fetchData(), 600000);
     return () => clearInterval(interval);
   }, [container?.id]);
 
