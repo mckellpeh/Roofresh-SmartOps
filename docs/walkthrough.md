@@ -24,10 +24,11 @@ Now you can smoothly zoom in and out of the timeline using your mouse scroll whe
 *   **On-Demand Logs Overlay:** Clicking **`📊 Logs`** fetches the latest live auto-climate regulation activities directly from the database and displays them in a gorgeous glassmorphic modal overlay.
 *   **Vibrant State Indicators:** System events are beautifully color-coded (Blue for stable, Red for hot/cooling, Orange for cold/warming).
 
-### 4. Interactive Glassmorphic Date Range Picker
-*   **Dynamic Date Compilation:** Programmatically gathers unique dates present in the active sensor database timeline to ensure users only select dates that have actual logged sensor readings.
-*   **Timeline Date Filtering:** Choose a custom Start and End date range from a gorgeous pop-up dialog. Applying the range clips the graph and statistics *instantly* to the selected days.
-*   **Context-Aware Navigation:** Scroll-wheel zooming and drag-pan panning remain fully operational and dynamically scaled *within the filtered date window*!
+### 4. Interactive Glassmorphic Calendar Range Selector
+*   **Visual Month Grid Calendar:** Displays a gorgeous grid representing the selected month (e.g. `May 2026`) with centered header titles and dynamic navigation (`◀` / `▶`) to shift between available logged months.
+*   **Vibrant Telemetry Activity Indicator Dots:** Each day containing actual active climate data displays a prominent green indicator dot. Days with no telemetry or in the future are padded out and disabled, guaranteeing you only select periods that contain actual data.
+*   **Smooth Highlighting & Selection Mechanics:** Click a day to set the Start Date, and click a subsequent day to set the End Date. Dates between them are beautifully highlighted in a translucent blue gradient rectangular capsule, while start/end boundaries receive a full solid primary green circular fill.
+*   **Context-Aware Navigation Continuity:** Once a custom range is applied, statistics cards immediately clip and recalculate. Scroll-wheel scaling and drag-panning remain fully interactive and auto-bounded within the chosen dates!
 
 ---
 
@@ -48,15 +49,15 @@ Clicking the new **`📊 Logs`** control button opens a beautiful, blurred modal
 
 ![System Logs Modal](./images/open_logs_modal.png)
 
-### 📅 Glassmorphic Date Range Modal:
-Clicking the new **`📅 Range`** button triggers a gorgeous, custom range select modal:
+### 📅 Glassmorphic Calendar Modal:
+Clicking the new **`📅 Range`** button triggers our custom React calendar day grid modal:
 
-![Date Range Modal](./images/range_modal_open.png)
+![Date Range Modal](./images/calendar_modal_open.png)
 
 ### 📅 Filtered Climate Graph & Recalculation:
-Applying a custom range displays a handsome glassmorphic active filter indicator at the top and filters the graphs dynamically:
+Applying a custom range displays a handsome glassmorphic active filter indicator at the top and filters the graphs dynamically, keeping scroll and pan zoom completely operational:
 
-![Date Range Applied](./images/date_range_applied.png)
+![Date Range Applied](./images/calendar_range_applied.png)
 
 ---
 
@@ -65,4 +66,4 @@ Applying a custom range displays a handsome glassmorphic active filter indicator
 *   **TypeScript Verification:** 100% green compilation.
 *   **Native Event Binding:** Successfully verified using an automated browser subagent. The native event listeners attach/detach seamlessly on container tab toggling to prevent memory leaks.
 *   **Integrated Diagnostics Dialog:** Fully compiled and validated live in Chromium sessions.
-*   **Dynamic Date Range Picker:** Fully verified with dynamic date dropdown selects and range clip recalculations.
+*   **Dynamic Calendar Range Picker:** Fully verified with dynamic day selections, disabled padding ranges, and clipped active timeline scroll scaling.

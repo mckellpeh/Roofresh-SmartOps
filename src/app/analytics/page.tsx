@@ -97,29 +97,133 @@ export default function AnalyticsPage() {
   const [tempStartDate, setTempStartDate] = useState<string>('');
   const [tempEndDate, setTempEndDate] = useState<string>('');
 
-  // Extract all unique dates available in the full dataset for selection
-  const getAvailableDates = () => {
-    const datesSet = new Set<string>();
-    fullDataset.forEach(p => {
-      if (p.timestamp) {
-        const dateStr = new Date(p.timestamp).toLocaleDateString('en-SG', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
-        });
-        datesSet.add(dateStr);
-      }
-    });
-    return Array.from(datesSet);
+  // Active calendar display month (e.g. "May 2026")
+  const [calendarMonthLabel, setCalendarMonthLabel] = useState<string>('');
+
+  // Convert any ISO timestamp to a standard date key "YYYY-MM-DD"
+  const getDateKey = (isoString: string) => {
+    const d = new Date(isoString);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   };
 
-  const handleOpenRangeModal = () => {
-    const available = getAvailableDates();
-    if (available.length > 0) {
-      setTempStartDate(startDate || available[0]);
-      setTempEndDate(endDate || available[available.length - 1]);
+  // Convert "YYYY-MM-DD" back to human readable format "May 17, 2026"
+  const getHumanDateLabel = (dateKey: string | null) => {
+    if (!dateKey) return '';
+    const [y, m, d] = dateKey.split('-').map(Number);
+    const dateObj = new Date(y, m - 1, d);
+    return dateObj.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Get unique months/years represented in the dataset (e.g. "May 2026")
+  const getDatasetMonths = () => {
+    const monthsSet = new Set<string>();
+    fullDataset.forEach(p => {
+      if (p.timestamp) {
+        const d = new Date(p.timestamp);
+        const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        monthsSet.add(label);
+      }
+    });
+    return Array.from(monthsSet);
+  };
+
+  useEffect(() => {
+    const months = getDatasetMonths();
+    if (months.length > 0) {
+      setCalendarMonthLabel(months[months.length - 1]);
     }
+  }, [fullDataset]);
+
+  const handleOpenRangeModal = () => {
+    const months = getDatasetMonths();
+    if (months.length > 0) {
+      setCalendarMonthLabel(months[months.length - 1]);
+    }
+    setTempStartDate(startDate || '');
+    setTempEndDate(endDate || '');
     setShowRangeModal(true);
+  };
+
+  const getDaysInMonth = (monthLabel: string) => {
+    if (!monthLabel) return [];
+    const parts = monthLabel.split(' ');
+    const monthName = parts[0];
+    const year = parseInt(parts[1]);
+    const monthIndex = new Date(`${monthName} 1, ${year}`).getMonth();
+    
+    const firstDayIndex = new Date(year, monthIndex, 1).getDay(); // Sunday = 0, Friday = 5...
+    const totalDays = new Date(year, monthIndex + 1, 0).getDate(); // 31...
+    
+    // We build the array of day items
+    const days: { dateKey: string; dayNum: number; isPadding: boolean; hasData: boolean }[] = [];
+    
+    // 1. Padding days from previous month
+    const prevMonthDays = new Date(year, monthIndex, 0).getDate();
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+      const dayNum = prevMonthDays - i;
+      const pmIndex = monthIndex === 0 ? 11 : monthIndex - 1;
+      const pmYear = monthIndex === 0 ? year - 1 : year;
+      const dateKey = `${pmYear}-${String(pmIndex + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+      days.push({
+        dateKey,
+        dayNum,
+        isPadding: true,
+        hasData: false
+      });
+    }
+    
+    // 2. Active days of current month
+    const datasetDateKeys = new Set(fullDataset.map(p => getDateKey(p.timestamp)));
+    
+    for (let d = 1; d <= totalDays; d++) {
+      const dateKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      days.push({
+        dateKey,
+        dayNum: d,
+        isPadding: false,
+        hasData: datasetDateKeys.has(dateKey)
+      });
+    }
+    
+    return days;
+  };
+
+  const handleDaySelect = (day: { dateKey: string; hasData: boolean }) => {
+    if (!day.hasData) return;
+    
+    if (!tempStartDate || (tempStartDate && tempEndDate)) {
+      setTempStartDate(day.dateKey);
+      setTempEndDate('');
+    } else {
+      if (day.dateKey < tempStartDate) {
+        setTempStartDate(day.dateKey);
+      } else {
+        setTempEndDate(day.dateKey);
+      }
+    }
+  };
+
+  const handlePrevMonth = () => {
+    const months = getDatasetMonths();
+    const idx = months.indexOf(calendarMonthLabel);
+    if (idx > 0) {
+      setCalendarMonthLabel(months[idx - 1]);
+    }
+  };
+
+  const handleNextMonth = () => {
+    const months = getDatasetMonths();
+    const idx = months.indexOf(calendarMonthLabel);
+    if (idx !== -1 && idx < months.length - 1) {
+      setCalendarMonthLabel(months[idx + 1]);
+    }
   };
 
   const fetchAutomationLogs = async () => {
@@ -167,13 +271,9 @@ export default function AnalyticsPage() {
     
     // Apply Date Range Filter if set
     if (startDate && endDate) {
-      const startMs = new Date(startDate).getTime();
-      // End of selected day (23:59:59.999)
-      const endMs = new Date(endDate).getTime() + 24 * 60 * 60 * 1000 - 1;
-      
       datasetToSlice = fullDataset.filter(p => {
-        const timeMs = new Date(p.timestamp).getTime();
-        return timeMs >= startMs && timeMs <= endMs;
+        const key = getDateKey(p.timestamp);
+        return key >= startDate && key <= endDate;
       });
     }
     
@@ -632,7 +732,7 @@ export default function AnalyticsPage() {
                 margin: '0 auto -10px auto'
               }}>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: '#0070f3', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  📅 Active Timeline Date Filter: <strong>{startDate}</strong> to <strong>{endDate}</strong>
+                  📅 Active Timeline Date Filter: <strong>{getHumanDateLabel(startDate)}</strong> to <strong>{getHumanDateLabel(endDate)}</strong>
                 </span>
                 <button 
                   onClick={() => {
@@ -1019,7 +1119,7 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {/* Glassmorphic Date Range Picker Modal */}
+      {/* Glassmorphic Calendar Date Range Picker Modal */}
       {showRangeModal && (
         <div style={{
           position: 'fixed',
@@ -1036,19 +1136,19 @@ export default function AnalyticsPage() {
         }}>
           <div className="glass-panel static" style={{
             width: '90%',
-            maxWidth: '500px',
+            maxWidth: '460px',
             padding: '28px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '24px',
+            gap: '20px',
             backgroundColor: 'rgba(255, 255, 255, 0.85)',
             border: '1px solid rgba(255, 255, 255, 0.5)',
             boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
             borderRadius: '24px'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--panel-border)', paddingBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.4rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                📅 Select Climate Date Range
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--panel-border)', paddingBottom: '14px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.35rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                📅 Climate Calendar Timeline
               </h3>
               <button 
                 onClick={() => setShowRangeModal(false)}
@@ -1071,56 +1171,149 @@ export default function AnalyticsPage() {
               </button>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                Filter telemetry charts to show only records between your chosen start and end dates. Available dates are populated dynamically based on actual sensor database history.
-              </p>
-              
-              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: '180px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-main)' }}>Start Date</label>
-                  <select 
-                    value={tempStartDate}
-                    onChange={(e) => setTempStartDate(e.target.value)}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* Selected date range status indicator */}
+              <div style={{
+                padding: '10px 14px',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(0, 112, 243, 0.05)',
+                border: '1px solid rgba(0, 112, 243, 0.15)',
+                fontSize: '12.5px',
+                fontWeight: 700,
+                color: '#0070f3',
+                textAlign: 'center'
+              }}>
+                {!tempStartDate && !tempEndDate && '👉 Select a start date from the calendar...'}
+                {tempStartDate && !tempEndDate && `📅 Start: ${getHumanDateLabel(tempStartDate)} (Select end date...)`}
+                {tempStartDate && tempEndDate && `📅 Range: ${getHumanDateLabel(tempStartDate)} — ${getHumanDateLabel(tempEndDate)}`}
+              </div>
+
+              {/* Dynamic Calendar Grid Selector */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                border: '1px solid var(--panel-border)',
+                borderRadius: '16px',
+                padding: '16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.4)'
+              }}>
+                {/* Month Navigation Row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <button 
+                    onClick={handlePrevMonth}
+                    disabled={getDatasetMonths().indexOf(calendarMonthLabel) <= 0}
                     style={{
-                      padding: '10px 14px',
-                      borderRadius: '12px',
-                      border: '1px solid var(--panel-border)',
-                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                      border: 'none',
+                      background: 'rgba(0, 0, 0, 0.04)',
+                      borderRadius: '8px',
+                      width: '28px',
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      fontWeight: 800,
                       color: 'var(--text-main)',
-                      fontSize: '13.5px',
-                      fontWeight: 600,
-                      outline: 'none',
-                      cursor: 'pointer'
+                      opacity: getDatasetMonths().indexOf(calendarMonthLabel) <= 0 ? 0.3 : 1
                     }}
                   >
-                    {getAvailableDates().map((d, idx) => (
-                      <option key={idx} value={d}>{d}</option>
-                    ))}
-                  </select>
+                    ◀
+                  </button>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-main)' }}>
+                    {calendarMonthLabel || 'Loading Calendar...'}
+                  </span>
+                  <button 
+                    onClick={handleNextMonth}
+                    disabled={getDatasetMonths().indexOf(calendarMonthLabel) === -1 || getDatasetMonths().indexOf(calendarMonthLabel) >= getDatasetMonths().length - 1}
+                    style={{
+                      border: 'none',
+                      background: 'rgba(0, 0, 0, 0.04)',
+                      borderRadius: '8px',
+                      width: '28px',
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      fontWeight: 800,
+                      color: 'var(--text-main)',
+                      opacity: (getDatasetMonths().indexOf(calendarMonthLabel) === -1 || getDatasetMonths().indexOf(calendarMonthLabel) >= getDatasetMonths().length - 1) ? 0.3 : 1
+                    }}
+                  >
+                    ▶
+                  </button>
                 </div>
                 
-                <div style={{ flex: 1, minWidth: '180px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-main)' }}>End Date</label>
-                  <select 
-                    value={tempEndDate}
-                    onChange={(e) => setTempEndDate(e.target.value)}
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: '12px',
-                      border: '1px solid var(--panel-border)',
-                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                      color: 'var(--text-main)',
-                      fontSize: '13.5px',
-                      fontWeight: 600,
-                      outline: 'none',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {getAvailableDates().map((d, idx) => (
-                      <option key={idx} value={d}>{d}</option>
-                    ))}
-                  </select>
+                {/* Weekday Headers */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', gap: '4px', borderBottom: '1px solid var(--panel-border)', paddingBottom: '6px' }}>
+                  {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((w, idx) => (
+                    <span key={idx} style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)' }}>{w}</span>
+                  ))}
+                </div>
+                
+                {/* Calendar Day Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                  {getDaysInMonth(calendarMonthLabel).map((day, idx) => {
+                    const isSelectedStart = tempStartDate === day.dateKey;
+                    const isSelectedEnd = tempEndDate === day.dateKey;
+                    const isBetween = tempStartDate && tempEndDate && day.dateKey > tempStartDate && day.dateKey < tempEndDate;
+                    
+                    let cellBg = 'transparent';
+                    let cellColor = day.hasData ? 'var(--text-main)' : 'rgba(0, 0, 0, 0.15)';
+                    let borderRadius = '50%';
+                    let cursor = day.hasData ? 'pointer' : 'not-allowed';
+                    
+                    if (isSelectedStart || isSelectedEnd) {
+                      cellBg = 'var(--primary)';
+                      cellColor = '#ffffff';
+                    } else if (isBetween) {
+                      cellBg = 'rgba(0, 112, 243, 0.12)';
+                      cellColor = '#0070f3';
+                      borderRadius = '8px';
+                    } else if (day.isPadding) {
+                      cellColor = 'transparent';
+                      cursor = 'default';
+                    }
+                    
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handleDaySelect(day)}
+                        disabled={day.isPadding || !day.hasData}
+                        style={{
+                          aspectRatio: '1',
+                          width: '100%',
+                          border: 'none',
+                          background: cellBg,
+                          color: cellColor,
+                          borderRadius,
+                          fontSize: '12px',
+                          fontWeight: day.hasData ? 800 : 500,
+                          cursor,
+                          transition: 'all 0.15s ease',
+                          position: 'relative',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: 0
+                        }}
+                        title={day.hasData ? `Sensor logs active on ${getHumanDateLabel(day.dateKey)}` : 'No telemetry data'}
+                      >
+                        {!day.isPadding && day.dayNum}
+                        {day.hasData && !isSelectedStart && !isSelectedEnd && !isBetween && (
+                          <span style={{
+                            position: 'absolute',
+                            bottom: '3px',
+                            width: '4px',
+                            height: '4px',
+                            backgroundColor: 'var(--primary)',
+                            borderRadius: '50%'
+                          }} />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -1140,6 +1333,7 @@ export default function AnalyticsPage() {
                   borderRadius: '12px',
                   fontWeight: 700,
                   cursor: 'pointer',
+                  fontSize: '13px',
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -1156,17 +1350,22 @@ export default function AnalyticsPage() {
                     color: 'var(--text-muted)',
                     borderRadius: '12px',
                     fontWeight: 700,
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    fontSize: '13px'
                   }}
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={() => {
-                    setStartDate(tempStartDate);
-                    setEndDate(tempEndDate);
-                    setShowRangeModal(false);
+                    if (tempStartDate) {
+                      const finalEnd = tempEndDate || tempStartDate;
+                      setStartDate(tempStartDate);
+                      setEndDate(finalEnd);
+                      setShowRangeModal(false);
+                    }
                   }}
+                  disabled={!tempStartDate}
                   style={{
                     padding: '10px 24px',
                     backgroundColor: 'var(--primary)',
@@ -1174,7 +1373,9 @@ export default function AnalyticsPage() {
                     border: 'none',
                     borderRadius: '12px',
                     fontWeight: 700,
-                    cursor: 'pointer'
+                    cursor: tempStartDate ? 'pointer' : 'not-allowed',
+                    fontSize: '13px',
+                    opacity: tempStartDate ? 1 : 0.5
                   }}
                 >
                   Apply Range
