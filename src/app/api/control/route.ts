@@ -68,7 +68,7 @@ export async function POST(request: Request) {
         const isTurnOn = deviceId === humidContainer.humidifierOnId;
         const newHumidifierState = isTurnOn ? 'on' : 'off';
         await updateAutoTempState(humidContainer.id, { humidifierState: newHumidifierState });
-        await addLog(humidContainer.id, `Humidifier set to ${newHumidifierState.toUpperCase()} manually.`);
+        await addLog(humidContainer.id, `Humidifier ${newHumidifierState.toUpperCase()} -> [API Call] POST /v1.1/devices/${deviceId}/commands | Payload: ${JSON.stringify(payload)} | Response: ${JSON.stringify(data)}`);
       } catch (err) {
         console.error('Error logging manual humidifier control:', err);
       }

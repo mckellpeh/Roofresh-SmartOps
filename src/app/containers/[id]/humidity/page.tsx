@@ -91,7 +91,7 @@ export default function HumidityControl() {
       setHumidifierState(deviceId === container.humidifierOnId ? 'on' : 'off');
       
       const timestamp = new Date().toLocaleString('en-SG', { timeZone: 'Asia/Singapore' });
-      const newLog = `[${timestamp}] Humidifier set to ${deviceId === container.humidifierOnId ? 'ON' : 'OFF'} manually.`;
+      const newLog = `[${timestamp}] Humidifier ${deviceId === container.humidifierOnId ? 'ON' : 'OFF'} -> [API Call] POST /v1.1/devices/${deviceId}/commands | Payload: ${JSON.stringify({ command: 'press', parameter: 'default', commandType: 'command' })} | Response: ${JSON.stringify(data)}`;
       setLogs(prev => [...prev, newLog]);
       
       setFeedback({
