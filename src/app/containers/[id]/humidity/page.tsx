@@ -17,6 +17,7 @@ export default function HumidityControl() {
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [humidifierState, setHumidifierState] = useState<'on' | 'off' | 'unknown'>('unknown');
+  const [logs, setLogs] = useState<string[]>([]);
 
   if (!container) {
     return <main className={styles.main}>Container not found</main>;
@@ -41,11 +42,16 @@ export default function HumidityControl() {
         throw new Error(data.error || 'Failed to fetch sensor reading');
       }
 
-      // 2. Fetch virtual humidifier state
+      // 2. Fetch virtual humidifier state & logs
       const stateRes = await fetch(`/api/auto-temp?containerId=${container.id}`);
       const stateData = await stateRes.json();
-      if (stateData && stateData.humidifierState) {
-        setHumidifierState(stateData.humidifierState);
+      if (stateData) {
+        if (stateData.humidifierState) {
+          setHumidifierState(stateData.humidifierState);
+        }
+        if (stateData.logs) {
+          setLogs(stateData.logs);
+        }
       }
     } catch (err: any) {
       console.error(err);
@@ -83,6 +89,10 @@ export default function HumidityControl() {
       if (data.error) throw new Error(data.error);
       
       setHumidifierState(deviceId === container.humidifierOnId ? 'on' : 'off');
+      
+      const timestamp = new Date().toLocaleString('en-SG', { timeZone: 'Asia/Singapore' });
+      const newLog = `[${timestamp}] Humidifier set to ${deviceId === container.humidifierOnId ? 'ON' : 'OFF'} manually.`;
+      setLogs(prev => [...prev, newLog]);
       
       setFeedback({
         type: 'success',
@@ -302,6 +312,56 @@ export default function HumidityControl() {
                 Device: Bot Clicker (turn off)
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* SwitchBot Call & Activity Logs */}
+        <div className="glass-panel static" style={{ padding: '30px' }}>
+          <h2 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            📋 SwitchBot Activity Logs
+          </h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '20px' }}>
+            This list logs the history of SwitchBot API calls and actions initiated for this container's humidifier.
+          </p>
+          <div style={{
+            backgroundColor: 'var(--bg-color)',
+            border: '1px solid var(--panel-border)',
+            borderRadius: '12px',
+            padding: '20px',
+            maxHeight: '250px',
+            overflowY: 'auto',
+            fontFamily: 'monospace',
+            fontSize: '0.9rem'
+          }}>
+            {!logs || logs.length === 0 ? (
+              <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>
+                No humidifier activity logs available. Trigger buttons above to log commands.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {logs.slice().reverse().map((log, index) => {
+                  const isHumidifier = log.toLowerCase().includes('humidifier');
+                  const isOn = log.toLowerCase().includes('on');
+                  const isOff = log.toLowerCase().includes('off');
+                  
+                  let color = 'var(--text-muted)';
+                  if (isHumidifier) {
+                    color = isOn ? 'var(--primary)' : isOff ? 'var(--danger)' : 'var(--text-main)';
+                  }
+                  
+                  return (
+                    <div key={index} style={{ 
+                      borderBottom: '1px solid rgba(0, 0, 0, 0.05)', 
+                      paddingBottom: '8px', 
+                      color: color, 
+                      lineHeight: '1.4'
+                    }}>
+                      {log}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
