@@ -16,6 +16,7 @@ export default function HumidityControl() {
   const [currentHumidity, setCurrentHumidity] = useState<number | null>(null);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [humidifierState, setHumidifierState] = useState<'on' | 'off' | 'unknown'>('unknown');
 
   if (!container) {
     return <main className={styles.main}>Container not found</main>;
@@ -30,6 +31,7 @@ export default function HumidityControl() {
     }
     setSensorLoading(true);
     try {
+      // 1. Fetch current Hub readings
       const res = await fetch(`/api/devices?hubId=${container.hubId}`);
       const data = await res.json();
       if (data.body) {
@@ -37,6 +39,13 @@ export default function HumidityControl() {
         setLastRefreshed(new Date());
       } else {
         throw new Error(data.error || 'Failed to fetch sensor reading');
+      }
+
+      // 2. Fetch virtual humidifier state
+      const stateRes = await fetch(`/api/auto-temp?containerId=${container.id}`);
+      const stateData = await stateRes.json();
+      if (stateData && stateData.humidifierState) {
+        setHumidifierState(stateData.humidifierState);
       }
     } catch (err: any) {
       console.error(err);
@@ -72,6 +81,8 @@ export default function HumidityControl() {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
+      
+      setHumidifierState(deviceId === container.humidifierOnId ? 'on' : 'off');
       
       setFeedback({
         type: 'success',
@@ -197,6 +208,24 @@ export default function HumidityControl() {
             This container utilizes two separate physical SwitchBot bots to press the power toggles of your humidifier. 
             Click the buttons below to trigger the physical bots.
           </p>
+
+          {!isPending && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '30px' }}>
+              <span style={{ fontSize: '1.05rem', color: 'var(--text-muted)', fontWeight: 500 }}>Humidifier Status:</span>
+              <span style={{
+                padding: '6px 16px',
+                borderRadius: '20px',
+                fontSize: '0.95rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                backgroundColor: humidifierState === 'on' ? 'rgba(4, 139, 119, 0.1)' : humidifierState === 'off' ? 'rgba(226, 88, 76, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                color: humidifierState === 'on' ? 'var(--primary)' : humidifierState === 'off' ? 'var(--danger)' : 'var(--text-muted)',
+                border: `1px solid ${humidifierState === 'on' ? 'var(--primary-light)' : humidifierState === 'off' ? 'var(--danger)' : 'var(--panel-border)'}`
+              }}>
+                {humidifierState === 'on' ? 'ON 🟢' : humidifierState === 'off' ? 'OFF 🔴' : 'UNKNOWN ⚪'}
+              </span>
+            </div>
+          )}
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
             {/* Turn On Bot Card */}

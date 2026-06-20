@@ -61,6 +61,18 @@ export async function POST(request: Request) {
         console.error('Error logging manual control override:', err);
       }
     }
+    // Update virtual humidifier state if command was successful
+    const humidContainer = CONTAINERS.find(c => c.humidifierOnId === deviceId || c.humidifierOffId === deviceId);
+    if (humidContainer) {
+      try {
+        const isTurnOn = deviceId === humidContainer.humidifierOnId;
+        const newHumidifierState = isTurnOn ? 'on' : 'off';
+        await updateAutoTempState(humidContainer.id, { humidifierState: newHumidifierState });
+        await addLog(humidContainer.id, `Humidifier set to ${newHumidifierState.toUpperCase()} manually.`);
+      } catch (err) {
+        console.error('Error logging manual humidifier control:', err);
+      }
+    }
 
     return NextResponse.json(data);
   } catch (error: any) {

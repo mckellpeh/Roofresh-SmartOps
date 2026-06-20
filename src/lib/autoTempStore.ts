@@ -16,6 +16,7 @@ export interface AutoTempState {
   driftStartedAt: string | null;
   lastAlertSentAt: string | null;
   lastEvaluationTime: string | null;
+  humidifierState?: 'on' | 'off' | 'unknown';
 }
 
 const STATE_FILE_PATH = path.join(process.cwd(), 'src/config/auto-temp-state.json');
@@ -120,6 +121,7 @@ export async function getAutoTempState(containerId: string): Promise<AutoTempSta
       driftStartedAt: null,
       lastAlertSentAt: null,
       lastEvaluationTime: null,
+      humidifierState: 'unknown',
     };
     store[containerId] = state;
     await saveStore(store);
@@ -133,6 +135,7 @@ export async function getAutoTempState(containerId: string): Promise<AutoTempSta
     if (state.driftStartedAt === undefined) { state.driftStartedAt = null; modified = true; }
     if (state.lastAlertSentAt === undefined) { state.lastAlertSentAt = null; modified = true; }
     if (state.lastEvaluationTime === undefined) { state.lastEvaluationTime = null; modified = true; }
+    if (state.humidifierState === undefined) { state.humidifierState = 'unknown'; modified = true; }
     if (modified) {
       store[containerId] = state;
       await saveStore(store);
@@ -155,6 +158,7 @@ export async function updateAutoTempState(containerId: string, updates: Partial<
     driftStartedAt: null,
     lastAlertSentAt: null,
     lastEvaluationTime: null,
+    humidifierState: 'unknown',
   };
   
   const newState = {
