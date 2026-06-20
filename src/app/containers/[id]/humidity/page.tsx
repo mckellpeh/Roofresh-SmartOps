@@ -114,6 +114,8 @@ export default function HumidityControl() {
     }
   };
 
+  const humidifierLogs = logs.filter(log => log.toLowerCase().includes('humidifier'));
+
   return (
     <main className={styles.main}>
       <header className={styles.header}>
@@ -333,21 +335,17 @@ export default function HumidityControl() {
             fontFamily: 'monospace',
             fontSize: '0.9rem'
           }}>
-            {!logs || logs.length === 0 ? (
+            {!humidifierLogs || humidifierLogs.length === 0 ? (
               <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>
                 No humidifier activity logs available. Trigger buttons above to log commands.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {logs.slice().reverse().map((log, index) => {
-                  const isHumidifier = log.toLowerCase().includes('humidifier');
+                {humidifierLogs.slice().reverse().map((log, index) => {
                   const isOn = log.toLowerCase().includes('on');
                   const isOff = log.toLowerCase().includes('off');
                   
-                  let color = 'var(--text-muted)';
-                  if (isHumidifier) {
-                    color = isOn ? 'var(--primary)' : isOff ? 'var(--danger)' : 'var(--text-main)';
-                  }
+                  const color = isOn ? 'var(--primary)' : isOff ? 'var(--danger)' : 'var(--text-main)';
                   
                   return (
                     <div key={index} style={{ 
