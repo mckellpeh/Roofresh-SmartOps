@@ -14,7 +14,6 @@ export default function HumidityControl() {
   const [loading, setLoading] = useState(false);
   const [sensorLoading, setSensorLoading] = useState(true);
   const [currentHumidity, setCurrentHumidity] = useState<number | null>(null);
-  const [currentTemp, setCurrentTemp] = useState<number | null>(null);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -35,7 +34,6 @@ export default function HumidityControl() {
       const data = await res.json();
       if (data.body) {
         setCurrentHumidity(data.body.humidity || 0);
-        setCurrentTemp(data.body.temperature || 0);
         setLastRefreshed(new Date());
       } else {
         throw new Error(data.error || 'Failed to fetch sensor reading');
@@ -169,26 +167,15 @@ export default function HumidityControl() {
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No active SwitchBot Hub configured for this container.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', flexWrap: 'wrap', gap: '20px', padding: '10px 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px 0' }}>
               {/* Humidity Big Display */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <span style={{ fontSize: '4.5rem', lineHeight: '1' }}>💧</span>
-                <span style={{ fontSize: '3.5rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '10px' }}>
+                <span style={{ fontSize: '5.5rem', lineHeight: '1' }}>💧</span>
+                <span style={{ fontSize: '4.5rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '10px' }}>
                   {currentHumidity !== null ? `${currentHumidity}%` : '--%'}
                 </span>
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginTop: '5px' }}>
+                <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', marginTop: '10px' }}>
                   Current Humidity
-                </span>
-              </div>
-
-              {/* Temperature Display */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <span style={{ fontSize: '4.5rem', lineHeight: '1' }}>🌡️</span>
-                <span style={{ fontSize: '3.5rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '10px' }}>
-                  {currentTemp !== null ? `${currentTemp}°C` : '--°C'}
-                </span>
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginTop: '5px' }}>
-                  Current Temperature
                 </span>
               </div>
             </div>
