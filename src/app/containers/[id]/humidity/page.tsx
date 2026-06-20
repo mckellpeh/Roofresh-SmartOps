@@ -18,6 +18,11 @@ export default function HumidityControl() {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [humidifierState, setHumidifierState] = useState<'on' | 'off' | 'unknown'>('unknown');
   const [logs, setLogs] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!container) {
     return <main className={styles.main}>Container not found</main>;
@@ -162,7 +167,7 @@ export default function HumidityControl() {
             </span>
             <button 
               onClick={fetchSensorData} 
-              disabled={sensorLoading || isPending}
+              disabled={!mounted || sensorLoading || isPending}
               style={{
                 background: 'rgba(4, 139, 119, 0.1)',
                 color: 'var(--primary)',
@@ -260,7 +265,7 @@ export default function HumidityControl() {
               </div>
               <button
                 onClick={() => sendCommand(container.humidifierOnId, 'Turn On')}
-                disabled={loading || isPending || container.humidifierOnId === 'Pending'}
+                disabled={!mounted || loading || isPending || container.humidifierOnId === 'Pending'}
                 className={`${cardStyles.btn} ${cardStyles.active}`}
                 style={{ width: '100%', height: '50px', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
@@ -291,7 +296,7 @@ export default function HumidityControl() {
               </div>
               <button
                 onClick={() => sendCommand(container.humidifierOffId, 'Turn Off')}
-                disabled={loading || isPending || container.humidifierOffId === 'Pending'}
+                disabled={!mounted || loading || isPending || container.humidifierOffId === 'Pending'}
                 className={`${cardStyles.btn}`}
                 style={{
                   width: '100%',
