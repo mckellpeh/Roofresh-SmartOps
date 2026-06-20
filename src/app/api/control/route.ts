@@ -54,7 +54,8 @@ export async function POST(request: Request) {
 
           const logMsg = `[Manual Override] Air Conditioner set manually to ${temp}°C (Mode: ${modeStr}, Fan: ${fanStr}, Power: ${powerState}).`;
           
-          await addLog(container.id, logMsg);
+          const apiLog = `[API Call] POST /v1.1/devices/${deviceId}/commands | Payload: ${JSON.stringify(payload)} | Response: ${JSON.stringify(data)}`;
+          await addLog(container.id, `${logMsg} -> ${apiLog}`);
           await updateAutoTempState(container.id, { lastAcTemperature: temp });
         }
       } catch (err) {
