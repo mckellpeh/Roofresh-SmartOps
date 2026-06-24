@@ -417,7 +417,10 @@ export default function AutomationControl() {
                         padding: isAlert ? '8px 12px' : '4px 0',
                         borderRadius: isAlert ? '8px' : '0',
                         marginTop: isAlert ? '4px' : '0',
-                        marginBottom: isAlert ? '4px' : '0'
+                        marginBottom: isAlert ? '4px' : '0',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
+                        whiteSpace: 'pre-wrap'
                       }}>
                         <span style={{ color, fontWeight: 700, marginRight: '6px' }}>•</span> {log}
                       </div>

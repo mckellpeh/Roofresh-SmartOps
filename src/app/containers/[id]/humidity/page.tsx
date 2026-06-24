@@ -357,7 +357,10 @@ export default function HumidityControl() {
                       borderBottom: '1px solid rgba(0, 0, 0, 0.05)', 
                       paddingBottom: '8px', 
                       color: color, 
-                      lineHeight: '1.4'
+                      lineHeight: '1.4',
+                      wordBreak: 'break-all',
+                      overflowWrap: 'break-word',
+                      whiteSpace: 'pre-wrap'
                     }}>
                       {log}
                     </div>

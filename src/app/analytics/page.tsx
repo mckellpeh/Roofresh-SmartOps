@@ -1096,7 +1096,10 @@ export default function AnalyticsPage() {
                       fontSize: '13px',
                       lineHeight: '1.5',
                       color: 'var(--text-main)',
-                      fontFamily: 'monospace'
+                      fontFamily: 'monospace',
+                      wordBreak: 'break-all',
+                      overflowWrap: 'break-word',
+                      whiteSpace: 'pre-wrap'
                     }}>
                       {log}
                     </div>
