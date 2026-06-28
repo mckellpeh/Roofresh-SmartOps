@@ -55,7 +55,7 @@ export default async function ContainerHub({ params }: { params: Promise<{ id: s
             padding: '24px 30px',
             textAlign: 'left'
           }}>
-            <span style={{ fontSize: '3rem', flexShrink: 0 }}>🤖</span>
+            <span style={{ fontSize: '3rem', flexShrink: 0 }}>🤖🔥</span>
             <div>
               <h3 style={{ color: 'var(--text-main)', fontSize: '1.3rem', margin: 0 }}>Temperature Automation</h3>
               <p style={{ color: 'var(--text-muted)', marginTop: '6px', margin: 0, fontSize: '0.9rem' }}>Auto-regulate container temperature, monitor SwitchBot activity logs, and configure email alert thresholds.</p>
