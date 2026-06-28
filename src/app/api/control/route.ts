@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSwitchbotHeaders } from '@/lib/switchbot';
 import { CONTAINERS } from '@/config/containers';
 import { addLog, updateAutoTempState } from '@/lib/autoTempStore';
+import { addHumidityLog, updateAutoHumidityState } from '@/lib/autoHumidityStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,8 +69,13 @@ export async function POST(request: Request) {
       try {
         const isTurnOn = deviceId === humidContainer.humidifierOnId;
         const newHumidifierState = isTurnOn ? 'on' : 'off';
-        await updateAutoTempState(humidContainer.id, { humidifierState: newHumidifierState });
-        await addLog(humidContainer.id, `Humidifier ${newHumidifierState.toUpperCase()} -> [API Call] POST /v1.1/devices/${deviceId}/commands | Payload: ${JSON.stringify(payload)} | Response: ${JSON.stringify(data)}`);
+        const turnedOnAtVal = isTurnOn ? new Date().toISOString() : null;
+        
+        await updateAutoHumidityState(humidContainer.id, { 
+          humidifierState: newHumidifierState,
+          humidifierTurnedOnAt: turnedOnAtVal
+        });
+        await addHumidityLog(humidContainer.id, `Humidifier set manually to ${newHumidifierState.toUpperCase()}${isTurnOn ? ' (Will run for strictly 2 minutes)' : ''} -> [API Call] POST /v1.1/devices/${deviceId}/commands | Payload: ${JSON.stringify(payload)} | Response: ${JSON.stringify(data)}`);
       } catch (err) {
         console.error('Error logging manual humidifier control:', err);
       }

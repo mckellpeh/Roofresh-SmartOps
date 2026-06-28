@@ -48,7 +48,7 @@ export default function HumidityControl() {
       }
 
       // 2. Fetch virtual humidifier state & logs
-      const stateRes = await fetch(`/api/auto-temp?containerId=${container.id}`);
+      const stateRes = await fetch(`/api/auto-humidity?containerId=${container.id}`);
       const stateData = await stateRes.json();
       if (stateData) {
         if (stateData.humidifierState) {

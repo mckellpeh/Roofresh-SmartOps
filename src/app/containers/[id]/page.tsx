@@ -44,20 +44,38 @@ export default async function ContainerHub({ params }: { params: Promise<{ id: s
         </Link>
       </div>
 
-      <div style={{ marginTop: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginTop: '24px' }}>
         <Link href={`/containers/${container.id}/auto-temp`} style={{ textDecoration: 'none' }}>
           <div className="glass-panel" style={{ 
+            height: '100%',
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'flex-start', 
-            gap: '30px', 
-            padding: '30px 40px',
+            gap: '24px', 
+            padding: '24px 30px',
             textAlign: 'left'
           }}>
-            <span style={{ fontSize: '3.5rem', flexShrink: 0 }}>🤖</span>
+            <span style={{ fontSize: '3rem', flexShrink: 0 }}>🤖</span>
             <div>
-              <h3 style={{ color: 'var(--text-main)', fontSize: '1.5rem', margin: 0 }}>Temperature Automation</h3>
-              <p style={{ color: 'var(--text-muted)', marginTop: '6px', margin: 0 }}>Auto-regulate container temperature, monitor SwitchBot activity logs, and configure email alert safety thresholds.</p>
+              <h3 style={{ color: 'var(--text-main)', fontSize: '1.3rem', margin: 0 }}>Temperature Automation</h3>
+              <p style={{ color: 'var(--text-muted)', marginTop: '6px', margin: 0, fontSize: '0.9rem' }}>Auto-regulate container temperature, monitor SwitchBot activity logs, and configure email alert thresholds.</p>
+            </div>
+          </div>
+        </Link>
+        <Link href={`/containers/${container.id}/auto-humidity`} style={{ textDecoration: 'none' }}>
+          <div className="glass-panel" style={{ 
+            height: '100%',
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'flex-start', 
+            gap: '24px', 
+            padding: '24px 30px',
+            textAlign: 'left'
+          }}>
+            <span style={{ fontSize: '3rem', flexShrink: 0 }}>🤖💧</span>
+            <div>
+              <h3 style={{ color: 'var(--text-main)', fontSize: '1.3rem', margin: 0 }}>Humidity Automation</h3>
+              <p style={{ color: 'var(--text-muted)', marginTop: '6px', margin: 0, fontSize: '0.9rem' }}>Auto-regulate humidifier checks every 30 minutes, restrict run time to strictly 2 minutes, and set email alerts.</p>
             </div>
           </div>
         </Link>

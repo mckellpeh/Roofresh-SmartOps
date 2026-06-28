@@ -1,4 +1,5 @@
 import { updateAutoTempState, getAutoTempState } from './autoTempStore';
+import { updateAutoHumidityState, getAutoHumidityState } from './autoHumidityStore';
 import { CONTAINERS } from '@/config/containers';
 
 export interface AlertOptions {
@@ -207,6 +208,213 @@ async function appendAlertLog(containerId: string, type: 'drift' | 'critical', t
   const logMessage = `[${timestamp}] ${msg}`;
   
   await updateAutoTempState(containerId, {
+    logs: [...state.logs, logMessage],
+    lastAlertSentAt: new Date().toISOString(),
+  });
+}
+
+export interface HumidityAlertOptions {
+  containerId: string;
+  type: 'drift' | 'critical';
+  currentHumidity: number;
+  driftStartedAt?: string;
+  targetHumidity?: number;
+  criticalLimit?: number;
+}
+
+/**
+ * Dispatches an email notification when a container humidity alert condition is met.
+ */
+export async function sendHumidityEmailAlert(options: HumidityAlertOptions) {
+  const { containerId, type, currentHumidity, driftStartedAt, targetHumidity, criticalLimit } = options;
+  const container = CONTAINERS.find(c => c.id === containerId);
+  const containerName = container ? container.name : containerId;
+  const state = await getAutoHumidityState(containerId);
+  
+  if (!state.alertEmail) {
+    console.log(`[Alert System] Humidity alert condition met for ${containerName}, but no alert email is configured.`);
+    return;
+  }
+
+  const timestamp = new Date().toLocaleString('en-SG', { timeZone: 'Asia/Singapore' });
+  const subject = `⚠️ [ALERT] Roofresh Container ${containerName} Humidity Warning`;
+  
+  let bodyContent = '';
+  if (type === 'critical') {
+    const isTooDry = currentHumidity <= (state.criticalLowHumidity ?? 60);
+    const limitColor = isTooDry ? '#e2584c' : '#0070f3';
+    const warningBg = isTooDry ? '#fdf2f2' : '#f2f8fd';
+    const limitLabel = isTooDry ? 'Critical Low Humidity' : 'Critical High Humidity';
+    const actionMessage = isTooDry 
+      ? `The container has fallen below the critical low humidity safety threshold of ${criticalLimit ?? state.criticalLowHumidity}%. Please inspect the humidifier bot controls immediately to protect the cultivation crop.`
+      : `The container has exceeded the critical high humidity safety threshold of ${criticalLimit ?? state.criticalHighHumidity}%. Please inspect the environment immediately to protect the cultivation crop.`;
+
+    bodyContent = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid ${limitColor}; border-radius: 12px; padding: 24px; background-color: #fff;">
+        <h2 style="color: ${limitColor}; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+          ⚠️ ${isTooDry ? 'Critical Dryness Alert' : 'Critical Humidity Alert'}
+        </h2>
+        <p>This is an automated warning from the <strong>Roofresh SmartOps</strong> monitoring engine.</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #555;">Container:</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: bold;">${containerName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #555;">Current Humidity:</td>
+            <td style="padding: 8px 0; text-align: right; color: ${limitColor}; font-size: 1.25rem; font-weight: bold;">${currentHumidity.toFixed(1)}%</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #555;">${limitLabel}:</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #555;">${criticalLimit}%</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #555;">Timestamp:</td>
+            <td style="padding: 8px 0; text-align: right; color: #777;">${timestamp} (SST)</td>
+          </tr>
+        </table>
+        <div style="background-color: ${warningBg}; border-left: 4px solid ${limitColor}; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px;">
+          <strong>Action Required:</strong> ${actionMessage}
+        </div>
+        <p style="font-size: 0.85rem; color: #777; margin-bottom: 0;">Pasir Ris Mushroom Container SmartOps System.</p>
+      </div>
+    `;
+  } else {
+    const driftHours = driftStartedAt 
+      ? ((Date.now() - new Date(driftStartedAt).getTime()) / 3600000).toFixed(1)
+      : '1.0';
+      
+    bodyContent = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #d4af37; border-radius: 12px; padding: 24px; background-color: #fff;">
+        <h2 style="color: #d4af37; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+          ⏳ Unresolved Humidity Drift Alert
+        </h2>
+        <p>This is an automated warning from the <strong>Roofresh SmartOps</strong> monitoring engine.</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #555;">Container:</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: bold;">${containerName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #555;">Current Humidity:</td>
+            <td style="padding: 8px 0; text-align: right; color: #d4af37; font-size: 1.25rem; font-weight: bold;">${currentHumidity.toFixed(1)}%</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #555;">Target:</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: bold;">${targetHumidity ?? state.targetHumidity}% (±5%)</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #555;">Drift Duration:</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #555;">${driftHours} hours</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #555;">Timestamp:</td>
+            <td style="padding: 8px 0; text-align: right; color: #777;">${timestamp} (SST)</td>
+          </tr>
+        </table>
+        <div style="background-color: #fffbeb; border-left: 4px solid #d4af37; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px;">
+          <strong>Status:</strong> The container humidity has remained outside of the stable Target ±5% range for more than an hour despite active automated SwitchBot bot clicker corrections.
+        </div>
+        <p style="font-size: 0.85rem; color: #777; margin-bottom: 0;">Pasir Ris Mushroom Container SmartOps System.</p>
+      </div>
+    `;
+  }
+
+  // 1. Try sending via Resend API
+  if (process.env.RESEND_API_KEY) {
+    try {
+      console.log(`[Alert System] Sending email via Resend API to ${state.alertEmail}...`);
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: process.env.SMTP_FROM || 'Roofresh Automation <onboarding@resend.dev>',
+          to: state.alertEmail,
+          subject,
+          html: bodyContent,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`[Alert System] Email sent successfully via Resend. ID: ${data.id}`);
+        await appendHumidityAlertLog(containerId, type, currentHumidity, state.alertEmail);
+        return;
+      } else {
+        const errText = await response.text();
+        console.error(`[Alert System] Resend API failed: ${response.status} - ${errText}`);
+      }
+    } catch (err) {
+      console.error('[Alert System] Error sending with Resend API:', err);
+    }
+  }
+
+  // 2. Try sending via SMTP (nodemailer)
+  if (process.env.SMTP_HOST) {
+    try {
+      console.log(`[Alert System] Attempting to load nodemailer for SMTP send to ${state.alertEmail}...`);
+      const pkgName = 'nodemailer';
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const nodemailer = require(pkgName);
+      
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_PORT === '465',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || `"Roofresh SmartOps" <${process.env.SMTP_USER}>`,
+        to: state.alertEmail,
+        subject,
+        html: bodyContent,
+      });
+
+      console.log(`[Alert System] Email sent successfully via SMTP.`);
+      await appendHumidityAlertLog(containerId, type, currentHumidity, state.alertEmail);
+      return;
+    } catch (err) {
+      console.error(`[Alert System] SMTP Send failed or nodemailer is missing:`, err);
+    }
+  }
+
+  // 3. Fallback / Sandbox Mock Mode
+  console.log('========================================================================');
+  console.log(`[SANDBOX ALERT SYSTEM] SIMULATING EMAIL SENT TO: ${state.alertEmail}`);
+  console.log(`SUBJECT: ${subject}`);
+  console.log(`TYPE: ${type.toUpperCase()}`);
+  console.log(`CURRENT HUMIDITY: ${currentHumidity.toFixed(1)}%`);
+  console.log(`TIME: ${timestamp} (Singapore Standard Time)`);
+  console.log('========================================================================');
+
+  await appendHumidityAlertLog(containerId, type, currentHumidity, state.alertEmail, true);
+}
+
+async function appendHumidityAlertLog(containerId: string, type: 'drift' | 'critical', humidity: number, email: string, isSandbox = false) {
+  const timestamp = new Date().toLocaleString('en-SG', { timeZone: 'Asia/Singapore' });
+  const state = await getAutoHumidityState(containerId);
+  
+  let typeStr = '1-HOUR HUMIDITY DRIFT UNRESOLVED';
+  if (type === 'critical') {
+    const isTooDry = humidity <= (state.criticalLowHumidity ?? 60);
+    typeStr = isTooDry ? 'CRITICAL DRYNESS' : 'CRITICAL HIGH HUMIDITY';
+  }
+  
+  const prefix = isSandbox ? '[SANDBOX ALERT SENT]' : '[ALERT SENT]';
+  const msg = `${prefix} Email alert dispatched to ${email} due to ${typeStr} (Current Humidity: ${humidity.toFixed(1)}%).`;
+  
+  const logMessage = `[${timestamp}] ${msg}`;
+  
+  await updateAutoHumidityState(containerId, {
     logs: [...state.logs, logMessage],
     lastAlertSentAt: new Date().toISOString(),
   });

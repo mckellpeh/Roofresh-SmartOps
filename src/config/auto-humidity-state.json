@@ -1,0 +1,30 @@
+{
+  "container-left": {
+    "enabled": false,
+    "targetHumidity": 80,
+    "logs": [],
+    "alertEmail": "",
+    "alertsEnabled": false,
+    "criticalLowHumidity": 60,
+    "criticalHighHumidity": 95,
+    "driftStartedAt": null,
+    "lastAlertSentAt": null,
+    "lastEvaluationTime": null,
+    "humidifierState": "unknown",
+    "humidifierTurnedOnAt": null
+  },
+  "container-right": {
+    "enabled": false,
+    "targetHumidity": 80,
+    "logs": [],
+    "alertEmail": "",
+    "alertsEnabled": false,
+    "criticalLowHumidity": 60,
+    "criticalHighHumidity": 95,
+    "driftStartedAt": null,
+    "lastAlertSentAt": null,
+    "lastEvaluationTime": null,
+    "humidifierState": "unknown",
+    "humidifierTurnedOnAt": null
+  }
+}

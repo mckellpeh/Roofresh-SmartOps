@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSwitchbotHeaders } from '@/lib/switchbot';
 import { CONTAINERS } from '@/config/containers';
 import { evaluateAutoTemp } from '@/lib/autoTempStore';
+import { evaluateAutoHumidity } from '@/lib/autoHumidityStore';
 import { addHistoryPoint } from '@/lib/deviceHistoryStore';
 
 export const dynamic = 'force-dynamic';
@@ -38,6 +39,7 @@ export async function GET(request: Request) {
         await addHistoryPoint(container.id, data.body.temperature, humidity);
         
         await evaluateAutoTemp(container.id, data.body.temperature, container.acId, manual);
+        await evaluateAutoHumidity(container.id, humidity, manual);
       } catch (evalErr) {
         console.error(`[Automation] Error during evaluation for container ${container.id}:`, evalErr);
       }
