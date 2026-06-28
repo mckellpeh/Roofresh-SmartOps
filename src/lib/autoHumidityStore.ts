@@ -317,8 +317,8 @@ export async function evaluateAutoHumidity(containerId: string, currentHubHumidi
   const prefix = bypassRateLimit ? '[Manual Review] ' : '';
 
   // 5. Automated Controls Implementation
-  // If humidity is below target - 5%, turn ON the humidifier (which runs for 2 minutes)
-  if (current < target - 5) {
+  // If humidity is below target, turn ON the humidifier (which runs for 2 minutes)
+  if (current < target) {
     if (state.humidifierState !== 'on') {
       const success = await sendHumidifierCommand(container.humidifierOnId);
       if (success) {
@@ -326,12 +326,12 @@ export async function evaluateAutoHumidity(containerId: string, currentHubHumidi
           humidifierState: 'on',
           humidifierTurnedOnAt: new Date().toISOString()
         });
-        await addHumidityLog(containerId, `${prefix}Humidity too low (${current.toFixed(1)}% < Target ${target}% - 5%). Triggered Humidifier ON. Will run for strictly 2 minutes.`);
+        await addHumidityLog(containerId, `${prefix}Humidity below target (${current.toFixed(1)}% < Target ${target}%). Triggered Humidifier ON. Will run for strictly 2 minutes.`);
       } else {
-        await addHumidityLog(containerId, `${prefix}Humidity too low (${current.toFixed(1)}%). Attempted to turn Humidifier ON but SwitchBot call failed.`);
+        await addHumidityLog(containerId, `${prefix}Humidity below target (${current.toFixed(1)}%). Attempted to turn Humidifier ON but SwitchBot call failed.`);
       }
     } else {
-      await addHumidityLog(containerId, `${prefix}Humidity too low (${current.toFixed(1)}%), but Humidifier is already active.`);
+      await addHumidityLog(containerId, `${prefix}Humidity below target (${current.toFixed(1)}%), but Humidifier is already active.`);
     }
   } else if (current > target + 5) {
     // If humidity is above target + 5%, turn OFF humidifier (if it is currently running)
@@ -351,6 +351,6 @@ export async function evaluateAutoHumidity(containerId: string, currentHubHumidi
     }
   } else {
     // Stable within target range
-    await addHumidityLog(containerId, `${prefix}Humidity is stable at ${current.toFixed(1)}% (within Target ${target}% ± 5%). No correction needed.`);
+    await addHumidityLog(containerId, `${prefix}Humidity is stable at ${current.toFixed(1)}% (at or above Target ${target}%). No correction needed.`);
   }
 }
