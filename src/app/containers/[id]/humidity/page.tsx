@@ -38,7 +38,7 @@ export default function HumidityControl() {
     setSensorLoading(true);
     try {
       // 1. Fetch current Hub readings
-      const res = await fetch(`/api/devices?hubId=${container.hubId}`);
+      const res = await fetch(`/api/devices?hubId=${container.hubId}`, { cache: 'no-store' });
       const data = await res.json();
       if (data.body) {
         setCurrentHumidity(data.body.humidity || 0);
@@ -48,7 +48,7 @@ export default function HumidityControl() {
       }
 
       // 2. Fetch virtual humidifier state & logs
-      const stateRes = await fetch(`/api/auto-humidity?containerId=${container.id}`);
+      const stateRes = await fetch(`/api/auto-humidity?containerId=${container.id}`, { cache: 'no-store' });
       const stateData = await stateRes.json();
       if (stateData) {
         if (stateData.humidifierState) {

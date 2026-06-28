@@ -212,7 +212,19 @@ async function sendHumidifierCommand(deviceId: string): Promise<boolean> {
 
 export async function evaluateAutoHumidity(containerId: string, currentHubHumidity: number, bypassRateLimit = false) {
   const state = await getAutoHumidityState(containerId);
-  if (!state.enabled) return;
+  if (!state.enabled) {
+    if (bypassRateLimit) {
+      const target = state.targetHumidity;
+      const current = currentHubHumidity;
+      const prefix = '[Manual Review] ';
+      if (current < target) {
+        await addHumidityLog(containerId, `${prefix}Automation is deactivated. Humidity is below target (${current.toFixed(1)}% < Target ${target}%). If activated, Humidifier ON would trigger.`);
+      } else {
+        await addHumidityLog(containerId, `${prefix}Automation is deactivated. Humidity is stable at ${current.toFixed(1)}% (Target: ${target}%).`);
+      }
+    }
+    return;
+  }
 
   const now = Date.now();
   const container = CONTAINERS.find(c => c.id === containerId);

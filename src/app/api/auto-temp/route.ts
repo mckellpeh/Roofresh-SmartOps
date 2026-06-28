@@ -65,7 +65,8 @@ export async function POST(request: Request) {
       await addLog(containerId, `Critical high temperature safety limit adjusted to: ${criticalHighTemp}°C`);
     }
 
-    return NextResponse.json(newState);
+    const finalState = await getAutoTempState(containerId);
+    return NextResponse.json(finalState);
   } catch (error: any) {
     console.error('Error updating auto temp state:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

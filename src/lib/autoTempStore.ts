@@ -220,7 +220,21 @@ async function sendAcControlCommand(acId: string, temp: number): Promise<boolean
 
 export async function evaluateAutoTemp(containerId: string, currentHubTemp: number, acId: string, bypassRateLimit = false) {
   const state = await getAutoTempState(containerId);
-  if (!state.enabled) return;
+  if (!state.enabled) {
+    if (bypassRateLimit) {
+      const target = state.targetTemperature;
+      const current = currentHubTemp;
+      const prefix = '[Manual Review] ';
+      if (current > target + 1) {
+        await addLog(containerId, `${prefix}Automation is deactivated. Temperature is too high (${current.toFixed(1)}°C > Target ${target}°C + 1°C). If activated, AC cooling would trigger.`);
+      } else if (current < target - 1) {
+        await addLog(containerId, `${prefix}Automation is deactivated. Temperature is too low (${current.toFixed(1)}°C < Target ${target}°C - 1°C). If activated, AC heating would trigger.`);
+      } else {
+        await addLog(containerId, `${prefix}Automation is deactivated. Temperature is stable at ${current.toFixed(1)}°C (Target: ${target}°C).`);
+      }
+    }
+    return;
+  }
 
   // Rate limit: strictly evaluate and adjust at most once every 10 minutes (600,000 ms) unless bypassed manually
   const now = Date.now();

@@ -64,7 +64,8 @@ export async function POST(request: Request) {
       await addHumidityLog(containerId, `Critical high humidity safety limit adjusted to: ${criticalHighHumidity}%`);
     }
 
-    return NextResponse.json(newState);
+    const finalState = await getAutoHumidityState(containerId);
+    return NextResponse.json(finalState);
   } catch (error: any) {
     console.error('Error updating auto humidity state:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

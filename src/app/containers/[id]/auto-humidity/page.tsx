@@ -75,7 +75,7 @@ export default function HumidityAutomationControl() {
     if (!container) return;
     try {
       // 1. Fetch current Hub readings (triggers server evaluation if enabled)
-      const hubRes = await fetch(`/api/devices?hubId=${container.hubId}${isManual ? '&manual=true' : ''}`);
+      const hubRes = await fetch(`/api/devices?hubId=${container.hubId}${isManual ? '&manual=true' : ''}`, { cache: 'no-store' });
       const hubData = await hubRes.json();
       if (hubData.body) {
         setCurrentTemp(hubData.body.temperature || 0);
@@ -83,7 +83,7 @@ export default function HumidityAutomationControl() {
       }
 
       // 2. Fetch the Automation configuration and log state
-      const stateRes = await fetch(`/api/auto-humidity?containerId=${container.id}`);
+      const stateRes = await fetch(`/api/auto-humidity?containerId=${container.id}`, { cache: 'no-store' });
       const stateData = await stateRes.json();
       if (!stateData.error) {
         setState(stateData);
