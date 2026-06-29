@@ -42,6 +42,13 @@ export default async function ContainerHub({ params }: { params: Promise<{ id: s
             <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>Toggle Humidifier Bot</p>
           </div>
         </Link>
+        <Link href={`/containers/${container.id}/fan`} style={{ textDecoration: 'none' }}>
+          <div className="glass-panel" style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px' }}>
+            <span style={{ fontSize: '3rem', marginBottom: '16px' }}>🌀</span>
+            <h3 style={{ color: 'var(--text-main)', fontSize: '1.5rem' }}>Fan Control</h3>
+            <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>Toggle Exhaust Fan (Tapo P110M)</p>
+          </div>
+        </Link>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginTop: '24px' }}>

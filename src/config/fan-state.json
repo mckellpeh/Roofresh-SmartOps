@@ -1,0 +1,7 @@
+{
+  "ip": "192.168.1.84",
+  "state": "off",
+  "logs": [
+    "System: Fan control initialized. Tapo plug mapped."
+  ]
+}
