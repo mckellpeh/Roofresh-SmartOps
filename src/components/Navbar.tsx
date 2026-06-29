@@ -33,6 +33,7 @@ export default function Navbar() {
         {/* Desktop horizontal navigation flanking the logo */}
         <div className={styles.leftNavContainer}>
           <Link href="/" className={styles.leftNavLink}>Dashboard</Link>
+          <Link href="/monitoring" className={styles.leftNavLink}>Monitoring</Link>
           <Link href="/analytics" className={styles.leftNavLink}>Analytics</Link>
           <Link href="/weather" className={styles.leftNavLink}>Weather</Link>
         </div>
@@ -48,6 +49,7 @@ export default function Navbar() {
         {isOpen && (
           <div className={styles.menuDropdown} onClick={() => setIsOpen(false)}>
             <Link href="/" className={styles.menuLink}>Dashboard</Link>
+            <Link href="/monitoring" className={styles.menuLink}>Monitoring</Link>
             <Link href="/analytics" className={styles.menuLink}>Analytics</Link>
             <Link href="/weather" className={styles.menuLink}>Weather</Link>
           </div>
