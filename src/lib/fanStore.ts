@@ -140,6 +140,10 @@ export async function executeTapoToggle(ip: string): Promise<{ success: boolean;
     }
   } catch (err: any) {
     console.error('[Fan Control] Failed to execute Tapo python script:', err);
-    return { success: false, error: err.message || 'Execution error' };
+    let errorMessage = err.message || 'Execution error';
+    if (err.code === 'ENOENT') {
+      errorMessage = 'Local control command cannot run in the cloud. Tapo smart plugs only accept commands over your local WiFi network. Please run this command using the local dashboard (http://localhost:3000) on your laptop on site.';
+    }
+    return { success: false, error: errorMessage };
   }
 }
