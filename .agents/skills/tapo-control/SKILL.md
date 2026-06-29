@@ -26,6 +26,7 @@ python tapo_toggle.py <plug-ip-address>
 ```python
 import asyncio
 import sys
+import os
 from tapo import ApiClient
 
 async def main():
@@ -34,9 +35,13 @@ async def main():
         sys.exit(1)
         
     ip = sys.argv[1]
-    email = 'mckellpeh@gmail.com'
-    password = 'Fc1548ready@'
+    email = os.environ.get('TAPO_EMAIL')
+    password = os.environ.get('TAPO_PASSWORD')
     
+    if not email or not password:
+        print("Error: TAPO_EMAIL or TAPO_PASSWORD environment variables are not set.")
+        sys.exit(1)
+        
     try:
         client = ApiClient(email, password)
         device = await client.p110(ip)
