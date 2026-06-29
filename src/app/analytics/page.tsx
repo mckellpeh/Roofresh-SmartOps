@@ -88,6 +88,26 @@ export default function AnalyticsPage() {
   // Automation System Logs popup
   const [automationLogs, setAutomationLogs] = useState<string[]>([]);
   const [showLogsModal, setShowLogsModal] = useState(false);
+  const [realHistory, setRealHistory] = useState<Record<string, HistoryPoint[]>>({});
+
+  // Load real history data from API
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch('/api/history', { cache: 'no-store' });
+        const data = await res.json();
+        if (data && !data.error) {
+          setRealHistory(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch real history data:', err);
+      }
+    };
+    fetchHistory();
+    // Poll history every 30 seconds to keep analytics charts fresh
+    const interval = setInterval(fetchHistory, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Date Range Selection Popup
   const [showRangeModal, setShowRangeModal] = useState(false);
@@ -260,7 +280,17 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const baseTemp = selectedContainerId === 'container-left' ? 25.8 : 24.2;
     const baseHumid = selectedContainerId === 'container-left' ? 85 : 78;
-    const dataset = generateMassiveBaseline(timeMode, baseTemp, baseHumid);
+    
+    // Use real history points if available, otherwise fall back to mock baseline wave generator
+    const realPoints = realHistory[selectedContainerId];
+    let dataset: HistoryPoint[] = [];
+    
+    if (realPoints && realPoints.length > 0) {
+      dataset = realPoints;
+    } else {
+      dataset = generateMassiveBaseline(timeMode, baseTemp, baseHumid);
+    }
+    
     setFullDataset(dataset);
     setScrollOffset(0); // Reset scroll to most recent
     setStartDate(null); // Reset date range filter
@@ -272,7 +302,7 @@ export default function AnalyticsPage() {
     setActivePoints(dataset.slice(dataset.length - defaultZoom));
     setHoveredTempIndex(null);
     setHoveredHumidIndex(null);
-  }, [timeMode, selectedContainerId]);
+  }, [timeMode, selectedContainerId, realHistory]);
 
   // Sync active points when scrollOffset, zoomPoints, or date filters update
   useEffect(() => {
